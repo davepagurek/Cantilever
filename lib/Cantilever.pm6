@@ -1,8 +1,11 @@
 use v6;
 
+use Web::App;
+use HTTP::Easy::PSGI;
+
+use Cantilever::Path;
+
 class Cantilever {
-  use Web::App;
-  use HTTP::Easy::PSGI;
 
   # Public
   has Bool $.dev = False;
@@ -17,14 +20,21 @@ class Cantilever {
 
   submethod BUILD() {
     $!handler = sub ($context) {
-      given $context.path {
-        when '/' {
-          $context.set-status(200);
-          $context.content-type('text/html');
-          $context.send("Hello, world!");
-        }
+      my $path = Cantilever::Path.parse($context.path);
+      if $path<page> {
+        $context.set-status(200);
+        $context.content-type('text/html');
+        $context.send("Page: $path<category>/$path<page>");
+      } elsif $path<category> {
+        $context.set-status(200);
+        $context.content-type('text/html');
+        $context.send("Category: $path<category>");
+      } else {
+        $context.set-status(200);
+        $context.content-type('text/html');
+        $context.send("Home");
       }
-    };
+    }
   }
 
   method run() {
