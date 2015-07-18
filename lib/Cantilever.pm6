@@ -21,6 +21,10 @@ class Cantilever {
   submethod BUILD() {
     $!handler = sub ($context) {
       my $path = Cantilever::Path.parse($context.path);
+      if $path<home> {
+        $context.set-status(200);
+        $context.content-type('text/html');
+        $context.send("Home");
       if $path<page> {
         $context.set-status(200);
         $context.content-type('text/html');
@@ -30,9 +34,9 @@ class Cantilever {
         $context.content-type('text/html');
         $context.send("Category: $path<category>");
       } else {
-        $context.set-status(200);
+        $context.set-status(404);
         $context.content-type('text/html');
-        $context.send("Home");
+        $context.send("Page not found!");
       }
     }
   }
