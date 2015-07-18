@@ -7,8 +7,8 @@
         "Cantilever": "lib/Cantilever.pm"
     },
     "depends": [
-        "Web::App",
-        "HTTP::Easy::PSGI"
+        "Web",
+        "HTTP::Easy"
     ],
     "source-url": "git@github.com:pahgawk/Cantilever.git"
 }

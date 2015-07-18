@@ -4,4 +4,4 @@ perl6:
   - 2015.06
 install:
   - rakudobrew build-panda
-  - panda install Web::App HTTP::Easy::PSGI
+  - panda install Web HTTP::Easy
