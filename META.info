@@ -1,0 +1,14 @@
+{
+    "name": "Cantilever",
+    "version": "0.1.0",
+    "description": "A flat file CMS for Perl 6",
+    "author": "Dave Pagurek",
+    "provides": {
+        "Cantilever": "lib/Cantilever.pm"
+    },
+    "depends": [
+        "Web::App",
+        "HTTP::Easy::PSGI"
+    ],
+    "source-url": "git@github.com:pahgawk/Cantilever.git"
+}
