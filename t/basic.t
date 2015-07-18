@@ -25,8 +25,8 @@ subtest {
 
   for $parse-tests.list -> $row {
     my ($path, $expected, $description) = $row.list;
-    my $parsed = Cantilever::Path.parse($path);
-    ok(hash-compare($parsed, $expected), $description);
+    my $parsed = Cantilever::Path.new(path => $path);
+    ok(hash-compare($parsed.parse-results, $expected), $description);
   }
 }, "Can parse paths";
 

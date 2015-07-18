@@ -1,2 +1,0 @@
-#!/bin/sh
-panda install Bailador HTTP::Easy::PSGI

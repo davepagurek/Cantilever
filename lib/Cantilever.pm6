@@ -6,30 +6,31 @@ use HTTP::Easy::PSGI;
 use Cantilever::Path;
 
 class Cantilever {
-
-  # Public
   has Bool $.dev = False;
   has Str $.root;
-  has Int $.cache_life = 604800; # One week
+  has Int $.cache-life = 604800; # One week
   has Int $.port = 3000;
+  has Str $.content-dir = "content";
 
-  # Private
   has $!app;
   has $!http;
   has $!handler;
 
-  submethod BUILD() {
+  submethod BUILD {
     $!handler = sub ($context) {
-      my $path = Cantilever::Path.parse($context.path);
-      if $path<home> {
+      my $path = Cantilever::Path.new(
+        path => $context.path,
+        content-dir => $.content-dir,
+      );
+      if $path.is-home {
         $context.set-status(200);
         $context.content-type('text/html');
         $context.send("Home");
-      if $path<page> {
+      if $path.is-page {
         $context.set-status(200);
         $context.content-type('text/html');
         $context.send("Page: $path<category>/$path<page>");
-      } elsif $path<category> {
+      } elsif $path.is-category {
         $context.set-status(200);
         $context.content-type('text/html');
         $context.send("Category: $path<category>");
