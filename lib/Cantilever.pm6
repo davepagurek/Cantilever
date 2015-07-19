@@ -4,6 +4,7 @@ use Web::App;
 use HTTP::Easy::PSGI;
 
 use Cantilever::Path;
+use Cantilever::Test::Context;
 
 class Cantilever {
   has Bool $.dev = False;
@@ -20,7 +21,7 @@ class Cantilever {
     $!handler = sub ($context) {
       my $path = Cantilever::Path.new(
         path => $context.path,
-        content-dir => $.content-dir,
+        content-dir => $.content-dir
       );
       if $path.is-home {
         $context.set-status(200);
@@ -29,11 +30,11 @@ class Cantilever {
       } elsif $path.is-page {
         $context.set-status(200);
         $context.content-type('text/html');
-        $context.send("Page: $path.category/$path.page");
+        $context.send("Page: $path.source-file()");
       } elsif $path.is-category {
         $context.set-status(200);
         $context.content-type('text/html');
-        $context.send("Category: $path<category>");
+        $context.send("Category: $path.source-dir()");
       } else {
         $context.set-status(404);
         $context.content-type('text/html');
@@ -47,5 +48,12 @@ class Cantilever {
     $!app = Web::App.new($!http);
     self!make-handler;
     $!app.run: $!handler;
+  }
+
+  method get($url) {
+     self!make-handler unless $!handler;
+     my $context = Cantilever::Test::Context.new(path => $url);
+     $!handler($context);
+     return $context.to-hash;
   }
 }

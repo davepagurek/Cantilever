@@ -11,7 +11,8 @@ class Cantilever::Path {
   has $!page;
   has $!category;
 
-  submethod BUILD(:$path) {
+  submethod BUILD(:$path, :$content-dir) {
+    my $.content-dir = $content-dir;
     my $actions = Cantilever::Path::Actions.new;
     my $match = Cantilever::Path::Grammar.parse($path, actions => $actions);
     if $match {
@@ -43,7 +44,7 @@ class Cantilever::Path {
   }
 
   method is-category {
-    (? $!category) && (self.source-dir.IO ~~ :d);
+    (? $!category) && (! $!page) && (self.source-dir.IO ~~ :d);
   }
 
   method source-file {

@@ -4,13 +4,7 @@ plan *;
 
 use lib "lib";
 use Cantilever::Path;
-
-sub hash-compare($got, $expected) {
-  for $expected.keys -> $key {
-    return False unless $expected{$key} eqv $got{$key};
-  }
-  return True;
-}
+use Cantilever::Test::Helpers;
 
 subtest {
   my $parse-tests = [

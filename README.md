@@ -4,5 +4,5 @@ A flat file CMS for Perl 6
 ## Local development
 Run tests:
 ```
-perl6 t/*
+PERL6LIB=lib prove -v -r --exec=perl6 t/
 ```
