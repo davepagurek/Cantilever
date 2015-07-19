@@ -16,7 +16,7 @@ class Cantilever {
   has $!http;
   has $!handler;
 
-  submethod BUILD {
+  method !make-handler {
     $!handler = sub ($context) {
       my $path = Cantilever::Path.new(
         path => $context.path,
@@ -26,10 +26,10 @@ class Cantilever {
         $context.set-status(200);
         $context.content-type('text/html');
         $context.send("Home");
-      if $path.is-page {
+      } elsif $path.is-page {
         $context.set-status(200);
         $context.content-type('text/html');
-        $context.send("Page: $path<category>/$path<page>");
+        $context.send("Page: $path.category/$path.page");
       } elsif $path.is-category {
         $context.set-status(200);
         $context.content-type('text/html');
@@ -42,9 +42,10 @@ class Cantilever {
     }
   }
 
-  method run() {
+  method run {
     $!http = HTTP::Easy::PSGI.new(debug => $.dev, port => $.port);
     $!app = Web::App.new($!http);
+    self!make-handler;
     $!app.run: $!handler;
   }
 }

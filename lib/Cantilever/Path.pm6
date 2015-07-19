@@ -39,10 +39,18 @@ class Cantilever::Path {
   }
 
   method is-page {
-    (? $!page) && ("$!category/$!page.html".IO ~~ :e);
+    (? $!page) && (self.source-file.IO ~~ :e);
   }
 
   method is-category {
-    (? $!category) && ($!category.IO ~~ :d);
+    (? $!category) && (self.source-dir.IO ~~ :d);
+  }
+
+  method source-file {
+    $!home ?? "$.content-dir/index.html" !! "$.content-dir/$!category/$!page.html";
+  }
+
+  method source-dir {
+    "$.content-dir/$!category";
   }
 }
