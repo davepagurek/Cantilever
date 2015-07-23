@@ -12,7 +12,7 @@ class Cantilever::Path {
   has $!category;
 
   submethod BUILD(:$path, :$content-dir) {
-    my $.content-dir = $content-dir;
+    $!content-dir = $content-dir if $content-dir;
     my $actions = Cantilever::Path::Actions.new;
     my $match = Cantilever::Path::Grammar.parse($path, actions => $actions);
     if $match {
