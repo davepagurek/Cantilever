@@ -1,44 +1,29 @@
-#use Test;
-#plan *;
+use Test;
+plan *;
 
 use lib "lib";
-#use Cantilever::Page;
+use Cantilever::Page;
 use Cantilever::Test::Helpers;
 
-use Cantilever::Page::Grammar;
+subtest {
+  my $page-tests = [
+    # path, expected fields, description
+    ["<h1>This is a title</h1>", "<h1>This is a title</h1>", "Keeps heading tag"],
+    ["<p>This is a paragraph</p>", "<p>This is a paragraph</p>", "Keeps paragraph tag"],
+    ["This is a paragraph", "<p>This is a paragraph</p>", "Adds paragraph tag to bare line"],
+    ["This is a paragraph\n", "<p>This is a paragraph</p>", "Adds paragraph tag to bare line with newline"],
+    ["This is a <em>formatted</em> line", "<p>This is a <em>formatted</em> line</p>", "Keeps formatting tags"],
+    ["<code>my \$lang = \"perl6\";</code>", "<pre><code> my \$lang = \"perl6\"; </code></pre>", "Wraps code tag in pre tag"],
+    ["```\nmy \$lang = \"perl6\";```", "<pre><code> my \$lang = \"perl6\"; </code></pre>", "Parses markdown style code"],
+    ["<code lang='perl6'>my \$lang = \"perl6\";</code>", "<pre><code class='perl6'> my \$lang = \"perl6\"; </code></pre>", "Parses code language"],
+    ["``` perl6\nmy \$lang = \"perl6\";```", "<pre><code class='perl6'> my \$lang = \"perl6\"; </code></pre>", "Parses markdown style code with language"],
+  ];
 
-my $test = Q{
-  <h1> This is a heading </h1>
-  this is a test
-  Line 2!
-  <code lang="javascript">Here's some code</code>
-  <code>
-  Code on its own line
-  More code!
-  </code>
-``` perl6
-  my $test = False;
-```
-};
-my $match = Cantilever::Page::Grammar.parse($test);
-say $match.gist if $match;
+  for $page-tests.list -> $row {
+    my ($content, $expected, $description) = $row.list;
+    my $parsed = Cantilever::Page.new(content => $content);
+    ok(multiline-compare($parsed.parse-results<content>, $expected), $description);
+  }
+}, "Can parse basic pages";
 
-#subtest {
-  #my $page-tests = [
-    ## path, expected fields, description
-    #["/", {home => True, category => False}, "Parses root"],
-    #["/blog", {home => False, category => "blog"}, "Parses categories"],
-    #["/blog/", {home => False, category => "blog"}, "Parses categories with trailing slash"],
-    #["/blog/post", {home => False, category => "blog", page => "post"}, "Parses pages"],
-    #["/blog/post/", {home => False, category => "blog", page => "post"}, "Parses pages with trailing slash"],
-    #["/blog/post/something", {valid => False}, "Only parses category/page paths"],
-  #];
-
-  #for $page-tests.list -> $row {
-    #my ($path, $expected, $description) = $row.list;
-    #my $parsed = Cantilever::Path.new(path => $path);
-    #ok(hash-compare($parsed.parse-results, $expected), $description);
-  #}
-#}, "Can parse paths";
-
-#done;
+done;

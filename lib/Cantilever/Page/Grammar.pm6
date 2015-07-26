@@ -1,50 +1,12 @@
-use Grammar::Tracer;
 grammar Cantilever::Page::Grammar {
   rule TOP {
     ^ <meta>?<content>
   }
 
-  # Meta
   rule meta {
-    '<!--' <object> '-->'
+    '<!--' $<json>=.+? '-->'
   }
 
-  rule object     { '{' ~ '}' <pairlist>     }
-  rule pairlist   { <pair> * % \,            }
-  rule pair       { <string> ':' <value>     }
-  rule array      { '[' ~ ']' <arraylist>    }
-  rule arraylist  {  <value> * % [ \, ]      }
-
-  proto token value {*};
-  token value:sym<number> {
-    '-'?
-    [ 0 | <[1..9]> <[0..9]>* ]
-    [ \. <[0..9]>+ ]?
-    [ <[eE]> [\+|\-]? <[0..9]>+ ]?
-  }
-  token value:sym<true>    { <sym>    };
-  token value:sym<false>   { <sym>    };
-  token value:sym<null>    { <sym>    };
-  token value:sym<object>  { <object> };
-  token value:sym<array>   { <array>  };
-  token value:sym<string>  { <string> }
-
-  token string {
-    \" ~ \" [ <str> | \\ <str=.str_escape> ]*
-  }
-  token str {
-    <-["\\\t\n]>+
-  }
-
-  token str_escape {
-    <["\\/bfnrt]> | 'u' <utf16_codepoint>+ % '\u'
-  }
-  token utf16_codepoint {
-    <.xdigit>**4
-  }
-
-
-  #Content
   rule content {
     <block>* $
   }
@@ -56,7 +18,7 @@ grammar Cantilever::Page::Grammar {
 
   rule block:sym<code> {
     ['<' 'code' [ 'lang' '=' <quote> $<language>=[\w+] <quote> ]? '>' $<raw>=.*? '<' '/' 'code' '>']
-    ||
+    |
     ['```'[' '$<language>=[\w+]]? $<raw>=.*? '```']
   }
 
@@ -75,7 +37,7 @@ grammar Cantilever::Page::Grammar {
   #}
 
   rule block:sym<line> {
-     <:!r text>
+    {} <text>
   }
 
   proto regex text {*};

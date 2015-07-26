@@ -2,24 +2,34 @@ use v6;
 
 use Cantilever::Page::Actions;
 use Cantilever::Page::Grammar;
+use Cantilever;
+use JSON::Tiny;
 
 class Cantilever::Page {
-  has Str $.path = "";
+  has Str $.content;
+  has Hash $.meta;
+  has Bool $.valid;
   has Cantilever $.app;
 
-  submethod BUILD(:$path, :$app) {
-    $.path = $path;
-    $.app = $app;
-    my $actions = Cantilever::Path::Actions.new;
-    my $match = Cantilever::Path::Grammar.parse($path, actions => $actions);
+  submethod BUILD(:$content, :$app) {
+    $!app = $app if $app;
+    my $actions = Cantilever::Page::Actions.new;
+    my $match = Cantilever::Page::Grammar.parse($content || "", actions => $actions);
     if $match {
       my $result = $match.made;
       $!valid = True;
-      $!home = $result<home>;
-      $!page = $result<page>;
-      $!category = $result<category>;
+      $!meta = from-json($result<meta>) if $result<meta>;
+      $!content = $result<content> || "";
     } else {
       $!valid = False;
+    }
+  }
+
+  method parse-results {
+    {
+      valid => $!valid,
+      meta => $!meta,
+      content => $!content
     }
   }
 }
