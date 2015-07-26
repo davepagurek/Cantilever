@@ -8,9 +8,20 @@ use Cantilever::Test::Helpers;
 use Cantilever::Page::Grammar;
 
 my $test = Q{
-  This is a test
+  <h1> This is a heading </h1>
+  this is a test
+  Line 2!
+  <code lang="javascript">Here's some code</code>
+  <code>
+  Code on its own line
+  More code!
+  </code>
+``` perl6
+  my $test = False;
+```
 };
 my $match = Cantilever::Page::Grammar.parse($test);
+say $match.gist if $match;
 
 #subtest {
   #my $page-tests = [

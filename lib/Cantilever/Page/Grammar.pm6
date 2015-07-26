@@ -1,7 +1,7 @@
 use Grammar::Tracer;
 grammar Cantilever::Page::Grammar {
   rule TOP {
-    ^<meta>?<content>$
+    ^ <meta>?<content>
   }
 
   # Meta
@@ -45,23 +45,20 @@ grammar Cantilever::Page::Grammar {
 
 
   #Content
-  regex content {
-    <item>+
+  rule content {
+    <block>* $
   }
 
-  proto rule item {*};
-  rule item:sym<line> {
-     ^^ <raw> $$
+  proto rule block {*};
+  rule block:sym<heading-tag> {
+    '<' $<tag-type>=[ ['h'\d+] | 'p' | 'strong' | 'em' | 'u' | 'strike' ] '>' <text> '</' $<tag-type> '>'
   }
-  #rule item:sym<heading-tag> {
-    #'<'  ( ['h'\d+] | 'p' | 'strong' | 'em' | 'u' | 'strike' ) .+? '>' <item>* '</' $1 '>'
-  #}
 
-  #rule item:sym<code> {
-    #['< code' [ 'lang' '=' <quote> $<language>=\w+ <quote> ] '>' <raw>* '</code>']
-    #||
-    #['```'[' '$<language>=\w+]'\n' <raw>* '\n```']
-  #}
+  rule block:sym<code> {
+    ['<' 'code' [ 'lang' '=' <quote> $<language>=[\w+] <quote> ]? '>' $<raw>=.*? '<' '/' 'code' '>']
+    ||
+    ['```'[' '$<language>=[\w+]]? $<raw>=.*? '```']
+  }
 
   #rule item:<inline-code> {
     #'`'<raw>*'`'
@@ -77,16 +74,15 @@ grammar Cantilever::Page::Grammar {
     #'/'? '>'
   #}
 
-  rule item:<plaintext> {
-    <raw>
+  rule block:sym<line> {
+     <:!r text>
   }
+
+  proto regex text {*};
+  regex text:sym<plaintext> {\N+}
 
   token quote {
     \" | \'
-  }
-
-  token raw {
-    .+
   }
 
  }
