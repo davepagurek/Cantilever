@@ -2,8 +2,15 @@ class Cantilever::Page::Actions {
   method text:sym<plaintext>($/) {
     $/.make: ~$/;
   }
+  method text:sym<inline-code>($/) {
+    $/.make: "<span class='code'>{$<raw>}</span>";
+  }
   method block:sym<line>($/) {
-    $/.make: "<p>{$<text>}</p>\n";
+    my $content = "";
+    for $<text>.list -> $text {
+      $content ~= $text.made;
+    }
+    $/.make: "<p>{$content}</p>\n";
   }
   method block:sym<heading-tag>($/) {
     $/.make: "<{$<tag-type>}>{$<text>.made}</{$<tag-type>}>\n";

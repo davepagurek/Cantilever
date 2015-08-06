@@ -17,6 +17,8 @@ subtest {
     ["```\nmy \$lang = \"perl6\";```", "<pre><code> my \$lang = \"perl6\"; </code></pre>", "Parses markdown style code"],
     ["<code lang='perl6'>my \$lang = \"perl6\";</code>", "<pre><code class='perl6'> my \$lang = \"perl6\"; </code></pre>", "Parses code language"],
     ["``` perl6\nmy \$lang = \"perl6\";```", "<pre><code class='perl6'> my \$lang = \"perl6\"; </code></pre>", "Parses markdown style code with language"],
+    ["This is `code` in a line", "<p>This is <span class='code'>code</span> in a line</p>", "Inline code"],
+    ["This is <span class='code'>code</span> in a line", "<p>This is <span class='code'>code</span> in a line</p>", "Inline code as span"],
   ];
 
   for $page-tests.list -> $row {

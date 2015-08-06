@@ -22,11 +22,7 @@ grammar Cantilever::Page::Grammar {
     ['```'[' '$<language>=[\w+]]? $<raw>=.*? '```']
   }
 
-  #rule item:<inline-code> {
-    #'`'<raw>*'`'
-    #||
-    #'<span class="code">'<raw>*'</span>'
-  #}
+  
 
   #rule item:<captioned-image> {
     #'<img'
@@ -37,11 +33,16 @@ grammar Cantilever::Page::Grammar {
   #}
 
   rule block:sym<line> {
-    {} <text>
+    {} <text>+
   }
 
   proto regex text {*};
-  regex text:sym<plaintext> {\N+}
+  regex text:sym<inline-code> {
+    ['`'$<raw>=.*?'`']
+    ||
+    ['<span class="code">'$<raw>=.*?'</span>']
+  }
+  regex text:sym<plaintext> {{}\N+?}
 
   token quote {
     \" | \'
