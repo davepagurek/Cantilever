@@ -37,9 +37,6 @@ class Cantilever::Page::Actions {
     $/.make: $content;
   }
   method TOP($/) {
-    $/.make: {
-      meta => $<meta> ?? $<meta>.made !! {},
-      content => $<content>.made
-    };
+    $/.make: $<content>.made;
   }
 }
