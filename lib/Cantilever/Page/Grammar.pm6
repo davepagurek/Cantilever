@@ -13,7 +13,7 @@ grammar Cantilever::Page::Grammar {
 
   proto rule block {*};
   rule block:sym<heading-tag> {
-    '<' $<tag-type>=[ ['h'\d+] | 'p' | 'strong' | 'em' | 'u' | 'strike' ] '>' <text> '</' $<tag-type> '>'
+    '<' $<tag-type>=[ ['h'\d+] | 'p' | 'strong' | 'em' | 'u' | 'strike' ] '>' <text>* '</' $<tag-type> '>'
   }
 
   rule block:sym<code> {
@@ -22,15 +22,13 @@ grammar Cantilever::Page::Grammar {
     ['```'[' '$<language>=[\w+]]? $<raw>=.*? '```']
   }
 
-  
-
-  #rule item:<captioned-image> {
-    #'<img'
-      #'src' '=' <quote>$<src>=<raw><quote>
-      #'full' '=' <quote>$<full>=<raw><quote>
-      #'caption' '=' <quote>$<caption>=<raw><quote>
-    #'/'? '>'
-  #}
+  rule block:sym<captioned-image> {
+    {} '<img'
+      'src' '=' <quote>$<src>=.*?<quote>
+      'full' '=' <quote>$<full>=.*?<quote>
+      'caption' '=' <quote>$<caption>=<text>*?<quote>
+    '/'? '>'
+  }
 
   rule block:sym<line> {
     {} <text>+
