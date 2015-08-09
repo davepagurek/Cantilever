@@ -9,7 +9,6 @@ class Cantilever::Page {
   has Str $.source;
   has Str $.content;
   has Hash $.meta;
-  has Bool $.valid;
   has Bool $.only-meta;
   has Cantilever $.app;
 
@@ -27,17 +26,14 @@ class Cantilever::Page {
   }
 
   method !parse-meta($content is rw) {
-
+    my $match = $content.subst-mutate(/ ^ '<!--' $<json>=[ .*? ] '-->' /, "");
+    $!meta = from-json(~$match<json>.trim) if $match && ~$match<json>.trim.chars > 0;
   }
 
   method !parse-content($content is rw) {
     my $actions = Cantilever::Page::Actions.new;
     my $match = Cantilever::Page::Grammar.parse($content || "", actions => $actions);
-    if $match {
-      $!valid = True;
-      $!content = $match.made || "";
-    } else {
-      $!valid = False;
-    }
+    die "Couldn't parse source content" unless $match;
+    $!content = $match.made || "";
   }
 }

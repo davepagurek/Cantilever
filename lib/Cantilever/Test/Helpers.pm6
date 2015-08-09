@@ -11,7 +11,7 @@ module Cantilever::Test::Helpers {
   }
 
   sub multiline-compare($got, $expected) is export {
-    my $result = "$got ".subst(/\s+/, " ", :g) eqv "$expected ".subst(/\s+/, " ", :g);
+    my $result = "$got ".subst(/\s+/, " ", :g) eq "$expected ".subst(/\s+/, " ", :g);
     unless $result {
       say "Expected $expected.perl(), got $got.perl().";
     }

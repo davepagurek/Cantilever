@@ -12,6 +12,9 @@ class Cantilever::Page::Actions {
     }
     $/.make: "<p>{$content}</p>\n";
   }
+  method block:sym<comment>($/) {
+    $/.make: ~$/;
+  }
   method block:sym<heading-tag>($/) {
     my $content = "";
     for $<text>.list -> $text {

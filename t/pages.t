@@ -87,7 +87,17 @@ subtest {
       "<p><a href='%root%/some/page'>Link</a></p>",
       "<p><a href='./some/page'>Link</a></p>",
       "Replaces %root% with app root"
-    ]
+    ],
+    [
+      "<!-- \{\} --> <h1>Test</h1>",
+      "<h1>Test</h1>",
+      "Meta is removed from content"
+    ],
+    [
+      "<!-- \{\} --> <!-- comment --> <h1>Test</h1>",
+      "<!-- comment --> <h1>Test</h1>",
+      "Non-meta comments are left in"
+    ],
   ];
 
   for $page-tests.list -> $row {
@@ -96,5 +106,21 @@ subtest {
     ok(multiline-compare($parsed.content, $expected), $description);
   }
 }, "Can parse basic pages";
+
+subtest {
+  my $meta-tests = [
+    [
+      '<!-- { "title": "Test Page" } --> Test',
+      { title => "Test Page" },
+      "Parses meta as JSON"
+    ]
+  ];
+
+  for $meta-tests.list -> $row {
+    my ($content, $expected, $description) = $row.list;
+    my $parsed = Cantilever::Page.new(content => $content, app => $app);
+    ok(hash-compare($parsed.meta, $expected), $description);
+  }
+}, "Can parse meta";
 
 done;

@@ -1,10 +1,6 @@
 grammar Cantilever::Page::Grammar {
   rule TOP {
-    ^ <meta>?<content>
-  }
-
-  rule meta {
-    '<!--' $<json>=.+? '-->'
+    ^ <content>
   }
 
   rule content {
@@ -28,6 +24,10 @@ grammar Cantilever::Page::Grammar {
       'full' '=' <quote>$<full>=.*?<quote>
       'caption' '=' <quote>$<caption>=<text>*?<quote>
     '/'? '>'
+  }
+
+  rule block:sym<comment> {
+    '<!--' .*? '-->'
   }
 
   rule block:sym<line> {
