@@ -25,6 +25,8 @@ subtest {
     my $parsed = Cantilever::Path.new(path => $path);
     ok(hash-compare($parsed.parse-results, $expected), $description);
   }
+
+  done-testing;
 }, "Can parse paths";
 
 subtest {
@@ -42,6 +44,8 @@ subtest {
     my $response = $app.get($path);
     ok(hash-compare($response, $expected), $description);
   }
+
+  done-testing;
 }, "Gets the right status code";
 
-done;
+done-testing;

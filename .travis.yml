@@ -1,6 +1,4 @@
 language: perl6
-perl6:
-  - 2015.07
 install:
   - rakudobrew build-panda
-  - panda install Web HTTP::Easy
+  - panda installdeps .
