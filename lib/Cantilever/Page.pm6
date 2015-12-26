@@ -19,10 +19,13 @@ class Cantilever::Page {
       die "No source provided" unless $source;
       $content = $source.IO.slurp;
     }
-    $content.subst-mutate("%root%", $app.root) if $app;
+    #$content.subst-mutate("%root%", $app.root) if $app;
 
-    self!parse-meta($content);
-    self!parse-content($content) unless $only-meta;
+    if $only-meta {
+      self!parse-meta($content);
+    } else {
+      self!parse-content($content);
+    }
   }
 
   method !parse-meta($content is rw) {
@@ -34,6 +37,8 @@ class Cantilever::Page {
     my $actions = Cantilever::Page::Actions.new;
     my $match = Cantilever::Page::Grammar.parse($content || "", actions => $actions);
     die "Couldn't parse source content" unless $match;
-    $!content = $match.made || "";
+    my $made = $match.made;
+    $!content = $made.to-html;
+    $!meta = $made.meta;
   }
 }
