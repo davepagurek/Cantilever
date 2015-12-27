@@ -9,7 +9,8 @@
     "depends": [
         "Web",
         "HTTP::Easy",
-        "JSON::Tiny" 
+        "JSON::Tiny",
+        "HTML::Entity"
     ],
     "source-url": "git@github.com:pahgawk/Cantilever.git"
 }
