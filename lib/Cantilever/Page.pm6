@@ -95,6 +95,6 @@ class Cantilever::Page {
         )
       ]
     });
-    $!meta = deep-map($ast.meta, -> $v { $v.subst(/'%root%'/, $.root); });
+    $!meta = deep-map($ast.meta, -> $v { $v.subst(/'%root%'/, $.app.root); });
   }
 }

@@ -1,10 +1,9 @@
-#use Grammar::Tracer;
 grammar Cantilever::Page::Grammar {
   # Page rules
   token TOP {
     ^
-    <meta>? \n*
-    <content> \n*
+    <meta>? \s*
+    <content> \s*
     $
   }
   token meta { '<!--' ~ '-->' [ \s* <object> \s* ] }

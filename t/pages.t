@@ -109,25 +109,24 @@ subtest {
   done-testing;
 }, "Can parse basic pages";
 
-#subtest {
-  #my $meta-tests = [
-    #[
-      #'<!-- { "title": "Test Page" } --> Test',
-      #{ title => "Test Page" },
-      #"Parses meta as JSON"
-    #],
-  #];
+subtest {
+  my $meta-tests = [
+    [
+      '<!-- { "title": "Test Page" } --> Test',
+      { title => "Test Page" },
+      "Parses meta as JSON"
+    ],
+  ];
 
-  #for $meta-tests.list -> $row {
-    #my $content = $row.list[0];
-    #my $expected = $row.list[1];
-    #my $description = $row.list[2];
-    #say "Row:";
-    #my $parsed = Cantilever::Page.new(content => $content, app => $app);
-    #ok(hash-compare($parsed.meta, $expected), $description);
-  #}
+  for $meta-tests.list -> $row {
+    my $content = $row.list[0];
+    my $expected = $row.list[1];
+    my $description = $row.list[2];
+    my $parsed = Cantilever::Page.new(content => $content, app => $app);
+    ok(hash-compare($parsed.meta, $expected), $description);
+  }
 
-  #done-testing;
-#}, "Can parse meta";
+  done-testing;
+}, "Can parse meta";
 
 done-testing;

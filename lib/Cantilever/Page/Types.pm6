@@ -80,7 +80,7 @@ module Cantilever::Page::Types {
         )
       });
       if $tag {
-        @.children[0].to-html(%options);
+        @.children.map(*.to-html(%options)).join("");
       } else {
         "<p>" ~ @.children.map(*.to-html(%options)).join("") ~ "</p>";
       }
