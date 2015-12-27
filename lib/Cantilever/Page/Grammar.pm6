@@ -19,7 +19,7 @@ grammar Cantilever::Page::Grammar {
 
   proto token node {*}
   token node:sym<xml> { <tag> }
-  token node:sym<inline-code> { '`'~'`'[$<text>=[<-[\n \`]> | "\\'"]+] }
+  token node:sym<inline-code> {'`'~'`'[$<text>=[<-[\n \`]> | "\\'"]+]}
   token node:sym<text-node> {
     [
       <-[ \n \` \\ \< \>]> # All characters that aren't newlines or specials
@@ -32,7 +32,7 @@ grammar Cantilever::Page::Grammar {
   token tag:sym<self-closing-tag> { '<' <attr-name> <attributes> \s* '/' '>' }
   token tag:sym<wrapping-tag> {
     [ '<' $<tag-name>=(<attr-name>) <?{~$<tag-name>.lc ne "code"}> <attributes> '>' ] ~ [ '<' '/' $<tag-name> '>' ]
-    <content>
+    <node>*
   }
   token tag:sym<code-tag> {
     [ '<' 'code' <attributes> '>' ]

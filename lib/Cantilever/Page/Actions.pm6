@@ -1,99 +1,11 @@
+use Cantilever::Page::Types;
 use HTML::Entity;
-
-role Cantilever::Page::SourceNode {
-  method to-html() { ... }
-}
-
-class Cantilever::Page::PageSource does Cantilever::Page::SourceNode {
-  has @.content = [];
-  has %.meta = {};
-  method to-html() {
-    @.content.map(*.to-html).join("\n");
-  }
-}
-
-class Cantilever::Page::Text does Cantilever::Page::SourceNode {
-  has Str $.txt is required;
-  method to-html() { $.txt }
-}
-
-class Cantilever::Page::SourceCode does Cantilever::Page::SourceNode {
-  has Str $.src = "";
-  method to-html() {
-    encode-entities($.src);
-  }
-}
-
-class Cantilever::Page::Comment does Cantilever::Page::SourceNode {
-  has Str $.content = "";
-  method to-html() {
-    $.content;
-  }
-}
-
-class Cantilever::Page::Tag does Cantilever::Page::SourceNode {
-  has Str $.type is required;
-  has %.attributes = {};
-  has @.children = [];
-  has @!renderers = [
-    {
-      matches => -> $t { $t.type eq "img" && $t.attributes<full> },
-      render => -> $t {
-        "<div class='image'>"
-        ~ "<a href='{$t.attributes<full>}'>"
-        ~ "<img src='{$t.attributes<src>}'/></a>"
-        ~ "</a>"
-        ~ ($t.attributes<caption> ?? "<p>{$t.attributes<caption>}</p>" !! "")
-        ~ "</div>";
-      }
-    },
-    {
-      matches => -> $t { $t.type eq "code" },
-      render => -> $t {
-        "<pre><code" ~
-          ($t.attributes<lang> ??
-            " class='{$t.attributes<lang>}'" !!
-            "") ~
-          ">" ~
-          $t.children[0].to-html ~
-          "</code></pre>";
-      }
-    },
-  ];
-  method !attributesToHTML() {
-    %.attributes.kv.map(-> $k, $v { "$k='$v'" }).join(" ");
-  }
-  method to-html() {
-    my $customTag = @!renderers.first(-> $x {$x<matches>(self)});
-    if $customTag {
-      $customTag<render>(self);
-    } elsif @.children.elems == 0 {
-      "<$.type {self!attributesToHTML()} />";
-    } else {
-      "<$.type {self!attributesToHTML()}>" ~
-      @.children.map(*.to-html) ~
-      "</$.type>";
-    }
-  }
-}
-
-class Cantilever::Page::Line does Cantilever::Page::SourceNode {
-  has @.children is required;
-  method to-html() {
-    if @.children.elems == 1 && @.children[0].isa(Cantilever::Page::Tag) {
-      @.children[0].to-html;
-    } else {
-      "<p>" ~ @.children.map(*.to-html).join("") ~ "</p>";
-    }
-  }
-}
 
 class Cantilever::Page::Actions {
   method TOP($/) {
     $/.make: Cantilever::Page::PageSource.new(
       content => $<content>.made,
-      meta => {}
-      #meta => $meta.made
+      meta => $<meta> ?? $<meta>.made !! {}
     );
   }
   method content($/) {
@@ -125,7 +37,7 @@ class Cantilever::Page::Actions {
   method node:sym<inline-code>($/) {
     $/.make: Cantilever::Page::Tag.new(
       type => "span",
-      attributes => Hash.new(class => "code"),
+      attributes => { class => "code" },
       children => [ Cantilever::Page::SourceCode.new(src => ~$<text>) ]
     );
   }
@@ -146,7 +58,7 @@ class Cantilever::Page::Actions {
     $/.make: Cantilever::Page::Tag.new(
       type => ~$<tag-name>,
       attributes => $<attributes>.made,
-      children => $<content>.made
+      children => $<node> ?? $<node>.map(*.made) !! []
       #children => []
       #children => gather for $<nodes>.?map(*.made).list { take $_ }
     )
