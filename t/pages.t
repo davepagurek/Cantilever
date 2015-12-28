@@ -1,3 +1,5 @@
+use v6;
+
 use Test;
 plan *;
 
@@ -102,8 +104,47 @@ subtest {
 
   for $page-tests.list -> $row {
     my ($content, $expected, $description) = $row.list;
-    my $parsed = Cantilever::Page.new(content => $content, app => $app);
-    ok(multiline-compare($parsed.content, $expected), $description);
+    my $parsed = Cantilever::Page.new(
+      content => $content,
+      custom-tags => [
+        Cantilever::Page::CustomTag.new(
+          matches-fn => -> $t { $t.type eq "img" && $t.attributes<full> },
+          render-fn => -> $t, %options {
+            my $caption = "";
+            if $t.attributes<caption> {
+              $caption = "<p class='caption'>" ~
+                $t.attributes<caption>.subst(
+                  /'`'$<code>=(.+?)'`'/,
+                  -> $/ {'<span class=\'code\'>' ~ $<code> ~ '</span>'}
+                ) ~
+                "</p>";
+            }
+
+            "<div class='img'>"
+            ~ "<a href='{$t.attributes<full>}'>"
+            ~ "<img src='{$t.attributes<src>}' />"
+            ~ "</a>"
+            ~ $caption
+            ~ "</div>";
+          },
+          block => True
+        ),
+        Cantilever::Page::CustomTag.new(
+          matches-fn => -> $t { $t.type eq "code" },
+          render-fn => -> $t, %options {
+            "<pre><code" ~
+              ($t.attributes<lang> ??
+                " class='{$t.attributes<lang>}'" !!
+                "") ~
+              ">" ~
+              $t.children[0].to-html(%options) ~
+              "</code></pre>";
+          },
+          block => True
+        )
+      ]
+    );
+    ok(multiline-compare($parsed.rendered, $expected), $description);
   }
 
   done-testing;
@@ -122,7 +163,9 @@ subtest {
     my $content = $row.list[0];
     my $expected = $row.list[1];
     my $description = $row.list[2];
-    my $parsed = Cantilever::Page.new(content => $content, app => $app);
+    my $parsed = Cantilever::Page.new(
+      content => $content
+    );
     ok(hash-compare($parsed.meta, $expected), $description);
   }
 

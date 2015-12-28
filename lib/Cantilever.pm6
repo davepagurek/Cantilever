@@ -12,7 +12,7 @@ class Cantilever {
   has Int $.cache-life = 604800; # One week
   has Int $.port = 3000;
   has Str $.content-dir = "content";
-  has Array @.custom-tags = [];
+  has List @.custom-tags = [];
 
   has $!app;
   has $!http;
