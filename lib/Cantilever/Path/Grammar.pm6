@@ -1,8 +1,8 @@
+use v6;
+
 grammar Cantilever::Path::Grammar {
   token TOP {
-    ^^ '/' [ <category> [ '/' <page> ]? '/'? ]? $$
+    ^^ [ '/' <name> ]*? '/'? $$
   }
-  token category { <name> }
-  token page { <name> }
   token name { <[ \w \- ]>+ }
 }

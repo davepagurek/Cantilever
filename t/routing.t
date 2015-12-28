@@ -1,3 +1,4 @@
+use v6;
 use Test;
 plan *;
 
@@ -12,12 +13,13 @@ my $app = Cantilever.new(
 subtest {
   my $parse-tests = [
     # path, expected fields, description
-    ["/", {home => True, category => False}, "Parses root"],
-    ["/blog", {home => False, category => "blog"}, "Parses categories"],
-    ["/blog/", {home => False, category => "blog"}, "Parses categories with trailing slash"],
-    ["/blog/post", {home => False, category => "blog", page => "post"}, "Parses pages"],
-    ["/blog/post/", {home => False, category => "blog", page => "post"}, "Parses pages with trailing slash"],
-    ["/blog/post/something", {valid => False}, "Only parses category/page paths"],
+    ["/", {page-tree => []}, "Parses root"],
+    ["/blog", {page-tree => ["blog"]}, "Parses categories"],
+    ["/blog/", {page-tree => ["blog"]}, "Parses categories with trailing slash"],
+    ["/blog/post", {page-tree => ["blog", "post"]}, "Parses pages"],
+    ["/blog/post/", {page-tree => ["blog", "post"]}, "Parses pages with trailing slash"],
+    ["/blog/post/something", {page-tree => ["blog", "post", "something"]}, "Parses nested directory paths"],
+    ["/blog/post//something", {valid => False}, "Doesn't parse invalid paths"],
   ];
 
   for $parse-tests.list -> $row {
