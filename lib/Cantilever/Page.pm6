@@ -4,6 +4,7 @@ use HTML::Entity;
 use Cantilever::Page::Actions;
 use Cantilever::Page::Grammar;
 use Cantilever::Page::Types;
+use Cantilever::Helpers;
 use Cantilever;
 
 class Cantilever::Page {
@@ -11,28 +12,10 @@ class Cantilever::Page {
 
   has Cantilever::Page::PageSource $!ast;
   has Str $!rendered;
-  has @!custom-tags;
   has Str $!root;
 
-  sub deep-map($var, &replacement) {
-    if $var.isa(Str) {
-      &replacement($var);
-    } elsif $var.isa(Hash) {
-      Hash.new($var.kv.map(-> $k, $v {
-        $k => deep-map($v, &replacement);
-      }));
-    } elsif $var.isa(Array) {
-      Array.new($var.list.map(-> $el {
-        deep-map($el, &replacement);
-      }));
-    } else {
-      $var;
-    }
-  }
-
-  submethod BUILD(Str :$content, Str :$root = ".", :@custom-tags = []) {
+  submethod BUILD(Str :$content, Str :$root = ".") {
     $!root = $root;
-    @!custom-tags := @custom-tags;
 
     my $actions = Cantilever::Page::Actions.new;
     my $match = Cantilever::Page::Grammar.parse($content || "", actions => $actions);
@@ -41,11 +24,11 @@ class Cantilever::Page {
     $!meta = deep-map($!ast.meta, -> $v { $v.subst(/'%root%'/, $!root); });
   }
 
-  method rendered returns Str {
+  method rendered(:@custom-tags) returns Str {
     unless $!rendered {
       $!rendered = $!ast.to-html({
         root => $!root,
-        custom-tags => @!custom-tags
+        custom-tags => @custom-tags
       });
     }
 

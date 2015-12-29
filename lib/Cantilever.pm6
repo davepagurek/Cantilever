@@ -4,6 +4,7 @@ use Web::App;
 use HTTP::Easy::PSGI;
 
 use Cantilever::Path;
+#use Cantilever::Category;
 use Cantilever::Test::Context;
 
 class Cantilever {
@@ -14,8 +15,10 @@ class Cantilever {
   has Str $.content-dir = "content";
   has List @.custom-tags = [];
 
-  has $!app;
-  has $!http;
+  has Web::App $!app;
+  has HTTP::Easy::PSGI $!http;
+  has Hash %!pages;
+
   has &!handler = -> $context {
     my $path = Cantilever::Path.new(
       path => $context.path,
@@ -39,6 +42,14 @@ class Cantilever {
       $context.send("Page not found!");
     }
   };
+
+  #method pages {
+    #$!pages = $!pages || Cantilever::Category.new(
+      #path => $.content-dir.IO,
+      #root => $.root
+    #);
+    #$!pages;
+  #}
 
   method run {
     $!http = HTTP::Easy::PSGI.new(debug => $.dev, port => $.port);
