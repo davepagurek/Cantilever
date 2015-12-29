@@ -56,8 +56,14 @@ class Cantilever::Category {
     if @page-tree.elems == 0 {
       self;
     } else {
-      say @page-tree.perl;
       %.sub-cats{@page-tree[0]}.?get-category(@page-tree[1 .. *-1]);
     }
+  }
+
+  method to-hash returns Hash {
+    Hash.new(
+      %!pages.kv.map(-> $k, $v { $k => True }),
+      %!sub-cats.kv.map(-> $k, $v { $k => $v.to-hash })
+    );
   }
 }

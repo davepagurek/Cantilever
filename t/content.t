@@ -47,6 +47,24 @@ subtest {
     ok(hash-compare($response, $expected), $description);
   }
 
+  my $content = Cantilever::Category.new(path => "t/test-content".IO);
+  is-deeply(
+    $content.to-hash,
+    {
+      blog => { hello_world => True },
+      portfolio => {
+        test_art => True,
+        programming => { test_programming => True }
+      }
+    },
+    "Category parses all valid subpages and none extra"
+  );
+  is-deeply(
+    $content.get-category(["blog"]).?meta,
+    { name => "Blog", order => 4 },
+    "Parses category json files"
+  );
+
   done-testing;
 }, "Gets the right status code";
 
