@@ -4,7 +4,7 @@ use Web::App;
 use HTTP::Easy::PSGI;
 
 use Cantilever::Path;
-#use Cantilever::Category;
+use Cantilever::Category;
 use Cantilever::Test::Context;
 
 class Cantilever {
@@ -17,7 +17,10 @@ class Cantilever {
 
   has Web::App $!app;
   has HTTP::Easy::PSGI $!http;
-  has Hash %!pages;
+  has Cantilever::Category $!pages = Cantilever::Category.new(
+    path => $!content-dir.IO,
+    root => $!root
+  );
 
   has &!handler = -> $context {
     my $path = Cantilever::Path.new(
@@ -28,11 +31,11 @@ class Cantilever {
       $context.set-status(200);
       $context.content-type('text/html');
       $context.send("Home");
-    } elsif $path.is-page {
+    } elsif $path.is-page && $!pages.get-page($path.page-tree) {
       $context.set-status(200);
       $context.content-type('text/html');
       $context.send("Page: $path.source-file()");
-    } elsif $path.is-category {
+    } elsif $path.is-category && $!pages.get-category($path.page-tree) {
       $context.set-status(200);
       $context.content-type('text/html');
       $context.send("Category: $path.source-dir()");
@@ -42,14 +45,6 @@ class Cantilever {
       $context.send("Page not found!");
     }
   };
-
-  #method pages {
-    #$!pages = $!pages || Cantilever::Category.new(
-      #path => $.content-dir.IO,
-      #root => $.root
-    #);
-    #$!pages;
-  #}
 
   method run {
     $!http = HTTP::Easy::PSGI.new(debug => $.dev, port => $.port);

@@ -5,6 +5,7 @@ plan *;
 
 use lib "lib";
 use Cantilever::Page;
+use Cantilever;
 use Cantilever::Test::Helpers;
 
 my $app = Cantilever.new(

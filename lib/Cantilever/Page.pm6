@@ -5,10 +5,9 @@ use Cantilever::Page::Actions;
 use Cantilever::Page::Grammar;
 use Cantilever::Page::Types;
 use Cantilever::Helpers;
-use Cantilever;
 
 class Cantilever::Page {
-  has Hash $.meta;
+  has %.meta;
 
   has Cantilever::Page::PageSource $!ast;
   has Str $!rendered;
@@ -21,7 +20,7 @@ class Cantilever::Page {
     my $match = Cantilever::Page::Grammar.parse($content || "", actions => $actions);
     die "Couldn't parse source content!" unless $match;
     $!ast = $match.made;
-    $!meta = deep-map($!ast.meta, -> $v { $v.subst(/'%root%'/, $!root); });
+    %!meta = deep-map($!ast.meta, -> $v { $v.subst(/'%root%'/, $!root); });
   }
 
   method rendered(:@custom-tags) returns Str {

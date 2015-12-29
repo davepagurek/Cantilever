@@ -51,4 +51,6 @@ class Cantilever::Path {
   method source-dir {
     "$.content-dir/{@!page-tree.join('/')}";
   }
+
+  method page-tree { @!page-tree; }
 }
