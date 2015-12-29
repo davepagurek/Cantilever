@@ -105,8 +105,9 @@ subtest {
 
   for $page-tests.list -> $row {
     my ($content, $expected, $description) = $row.list;
-    my $parsed = Cantilever::Page.new(content => $content);
-    ok(multiline-compare($parsed.rendered(custom-tags => [
+    my $parsed = Cantilever::Page.new(
+      content => $content,
+      custom-tags => [
         Cantilever::Page::CustomTag.new(
           matches-fn => -> $t { $t.type eq "img" && $t.attributes<full> },
           render-fn => -> $t, %options {
@@ -142,7 +143,9 @@ subtest {
           },
           block => True
         )
-      ]), $expected), $description);
+      ]
+    );
+    ok(multiline-compare($parsed.rendered, $expected), $description);
   }
 
   done-testing;

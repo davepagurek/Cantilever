@@ -3,20 +3,32 @@ use JSON::Tiny;
 
 use Cantilever::Page;
 use Cantilever::Helpers;
+use Cantilever::Exception;
 
 class Cantilever::Category {
   has IO::Path $.path;
+  has Str $.slug;
   has Cantilever::Page %.pages = {};
   has Cantilever::Category %.sub-cats = {};
+  has @.category-tree;
   has %.meta = {};
 
+  has @!custom-tags;
   has Str $!root;
 
-  submethod BUILD(IO::Path :$path, Str :$root = ".") {
+  submethod BUILD(:@category-tree = [], IO::Path :$path, Str :$root = ".", :@custom-tags = []) {
     $!path = $path;
+    $!slug = $!path.basename;
     $!root = $root;
+    @!custom-tags = @custom-tags;
+    @!category-tree = @category-tree;
 
-    die "Path $path does not exist!" unless $path.e;
+    unless $path.e {
+      die Cantilever::Exception.new(
+        message => "Couldn't parse category out of nonexistant path $path",
+        code => 500
+      );
+    }
 
     if "$path/category.json".IO.e {
       %!meta = deep-map(
@@ -29,17 +41,25 @@ class Cantilever::Category {
       if $element.d {
         %!sub-cats{$element.basename} = Cantilever::Category.new(
           path => $element,
-          root => $!root
+          root => $!root,
+          custom-tags => @!custom-tags,
+          category-tree => [ |@!category-tree, $!slug ]
         );
       } elsif $element.e &&  $element.extension ~~ /^ 'htm' 'l'? $/ {
-        %!pages{
-          $element.basename.substr(0, *-$element.extension.chars-1)
-        } = Cantilever::Page.new(
+        my $slug = $element.basename.substr(0, *-$element.extension.chars-1);
+        %!pages{$slug} = Cantilever::Page.new(
           content => $element.slurp,
-          root => $!root
+          root => $!root,
+          slug => $slug,
+          custom-tags => @!custom-tags,
+          category-tree => [ |@!category-tree, $!slug ]
         );
       }
     }
+  }
+
+  method link returns Str {
+    $!root ~ @.category-tree.join("/") ~ "/$.slug";
   }
 
   method get-page(@page-tree) returns Cantilever::Page {
