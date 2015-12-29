@@ -6,10 +6,6 @@ use lib "lib";
 use Cantilever;
 use Cantilever::Test::Helpers;
 
-my $app = Cantilever.new(
-  content-dir => "t/test-content"
-);
-
 subtest {
   my $parse-tests = [
     # path, expected fields, description
@@ -32,6 +28,10 @@ subtest {
 }, "Can parse paths";
 
 subtest {
+  my $app = Cantilever.new(
+    content-dir => "t/test-content"
+  );
+
   my $status-tests = [
     # path, expected fields, description
     ["/", {status => 200}, "Identifies root"],
@@ -45,8 +45,12 @@ subtest {
     my ($path, $expected, $description) = $row.list;
     my $response = $app.get($path);
     ok(hash-compare($response, $expected), $description);
-  }
+  } 
 
+  done-testing;
+}, "Gets the right status code";
+
+subtest {
   my $content = Cantilever::Category.new(path => "t/test-content".IO);
   is-deeply(
     $content.to-hash,
@@ -63,9 +67,42 @@ subtest {
     $content.get-category(["blog"]).?meta,
     { name => "Blog", order => 4 },
     "Parses category json files"
-  );
+  ); 
 
   done-testing;
-}, "Gets the right status code";
+}, "Can parse source content";
+
+subtest {
+  my $app = Cantilever.new(
+    content-dir => "t/test-content",
+    home => -> $c {
+      "Home: {$c.sub-cats.elems} subcats, {$c.pages.elems} pages";
+    },
+    category => -> $c {
+      "{$c.meta<name> || $c.slug}: " ~
+      "{$c.sub-cats.elems} subcats, {$c.pages.elems} pages";
+    },
+    page => -> $p {
+      "<h1>{$p.meta<title> || 'Untitled'}</h1> " ~
+      $p.rendered;
+    },
+    error => -> $e {
+      "<h1>{$e.?code || 500}</h1>";
+    }
+  );
+  my @render-tests = [
+    ["/", "Home: 2 subcats, 0 pages", "Renders home"],
+    ["/blog", "Blog: 0 subcats, 1 pages", "Renders category"],
+    ["/portfolio", "portfolio: 1 subcats, 1 pages", "Renders category with sub categories"],
+    ["/blog/hello_world", "<h1>Hello, World</h1> <p>This is test content!</p> ", "Renders page"],
+    ["/not_a_real_category", "<h1>404</h1>", "Renders error"]
+  ];
+
+  for @render-tests -> $row {
+    my ($path, $expected, $description) = $row.list;
+    my $response = $app.get($path)<response>;
+    ok(multiline-compare($response, $expected), $description);
+  }
+}
 
 done-testing;
