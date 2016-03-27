@@ -47,6 +47,11 @@ subtest {
       "Keeps formatting tags"
     ],
     [
+      "List:\n<ol>\n<li>Test</li>\n</ol>",
+      "<p>List:</p>\n<ol><li>Test</li></ol>",
+      "Keeps lists"
+    ],
+    [
       "<code>my \$lang = \"perl6\";</code>",
       "<pre><code>my \$lang = \&quot;perl6\&quot;;</code></pre>",
       "Wraps code tag in pre tag"

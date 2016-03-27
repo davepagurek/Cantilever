@@ -12,16 +12,18 @@ class Cantilever::Category {
   has Cantilever::Category %.sub-cats = {};
   has @.category-tree;
   has %.meta = {};
+  has Bool $.dev;
 
   has @!custom-tags;
   has Str $!root;
 
-  submethod BUILD(:@category-tree = [], IO::Path :$path, Str :$root = ".", :@custom-tags = []) {
+  submethod BUILD(:@ignore = [], :@category-tree = [], IO::Path :$path, Str :$root = ".", :@custom-tags = [], Bool :$dev = False) {
     $!path = $path;
     $!slug = $!path.basename;
     $!root = $root;
     @!custom-tags = @custom-tags;
     @!category-tree = @category-tree;
+    $!dev = $dev;
 
     unless $path.e {
       die Cantilever::Exception.new(
@@ -38,12 +40,14 @@ class Cantilever::Category {
     }
 
     for $!path.dir -> $element {
+      next if ~$element ~~ any(|@ignore);
       if $element.d {
         %!sub-cats{$element.basename} = Cantilever::Category.new(
           path => $element,
           root => $!root,
           custom-tags => @!custom-tags,
-          category-tree => [ |@!category-tree, $!slug ]
+          category-tree => [ |@!category-tree, $!slug ],
+          dev => $!dev
         );
       } elsif $element.e &&  $element.extension ~~ /^ 'htm' 'l'? $/ {
         my $slug = $element.basename.substr(0, *-$element.extension.chars-1);
@@ -52,7 +56,8 @@ class Cantilever::Category {
           root => $!root,
           slug => $slug,
           custom-tags => @!custom-tags,
-          category-tree => [ |@!category-tree, $!slug ]
+          category-tree => [ |@!category-tree, $!slug ],
+          dev => $!dev
         );
       }
     }

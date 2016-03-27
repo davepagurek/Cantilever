@@ -76,18 +76,18 @@ subtest {
   my $app = Cantilever.new(
     content-dir => "t/test-content",
     home => -> $c {
-      "Home: {$c.sub-cats.elems} subcats, {$c.pages.elems} pages";
+      "Home: {$c<content>.sub-cats.elems} subcats, {$c<content>.pages.elems} pages";
     },
     category => -> $c {
-      "{$c.meta<name> || $c.slug}: " ~
-      "{$c.sub-cats.elems} subcats, {$c.pages.elems} pages";
+      "{$c<category>.meta<name> || $c<category>.slug}: " ~
+      "{$c<category>.sub-cats.elems} subcats, {$c<category>.pages.elems} pages";
     },
     page => -> $p {
-      "<h1>{$p.meta<title> || 'Untitled'}</h1> " ~
-      $p.rendered;
+      "<h1>{$p<page>.meta<title> || 'Untitled'}</h1> " ~
+      $p<page>.rendered;
     },
     error => -> $e {
-      "<h1>{$e.?code || 500}</h1>";
+      "<h1>{$e<error>.?code || 500}</h1>";
     }
   );
   my @render-tests = [

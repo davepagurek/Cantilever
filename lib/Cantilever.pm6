@@ -14,6 +14,7 @@ class Cantilever {
   has Int $.cache-life = 604800; # One week
   has Int $.port = 3000;
   has Str $.content-dir = "content";
+  has @.ignore = [];
   has @.custom-tags = [];
 
   has Web::App $!app;
@@ -21,27 +22,29 @@ class Cantilever {
   has Cantilever::Category $!pages = Cantilever::Category.new(
     path => $!content-dir.IO,
     root => $!root,
-    custom-tags => @!custom-tags
+    custom-tags => @!custom-tags,
+    ignore => @!ignore,
+    dev => $!dev
   );
 
-  has &.home is rw = -> $category { "<h1>Home</h1>"; }
-  has &.page is rw = -> $page { "<h1>{$page.meta<title> || 'Untitled'}</h1> \n {$page.rendered}"; }
-  has &.category is rw = -> $category {
-    "<h1>Category {$category.meta<name> || 'Untitled'}</h1> \n" ~
+  has &.home is rw = -> %params { "<h1>Home</h1>"; }
+  has &.page is rw = -> %params { "<h1>{%params<page>.meta<title> || 'Untitled'}</h1> \n {%params<page>.rendered}"; }
+  has &.category is rw = -> %params {
+    "<h1>Category {%params<category>.meta<name> || 'Untitled'}</h1> \n" ~
     "<h2>Subcategories</h2> \n <ol>" ~
-    $category.sub-cats.kv.map(-> $slug, $cat {
+    %params<category>.sub-cats.kv.map(-> $slug, $cat {
       "<li><a href='$cat.link()'>{$cat.meta<name> || $slug}</a></li>"
     }) ~
     "</ol> \n <h2>Pages</h2> \n <ol>" ~ 
-    $category.pages.kv.map(-> $slug, $page {
+    %params<category>.pages.kv.map(-> $slug, $page {
       "<li><a href='$page.link()'>{$page.meta<title> || $slug}</a></li>"
     }) ~
     "</ol>";
   }
-  has &.error is rw = -> $error {
-    "<h1>Error {$error.?code || 500}</h1> \n " ~
-    "<pre>{$error.perl}</pre> \n " ~
-    "<pre>{ do given $error.backtrace[0] { [.file, .line, .subname].join('\n') } }</pre>";
+  has &.error is rw = -> %params {
+    "<h1>Error {%params<error>.?code || 500}</h1> \n " ~
+    "<pre>{%params<error>.perl}</pre> \n " ~
+    "<pre>{ do given %params<error>.backtrace[0] { [.file, .line, .subname].join('\n') } }</pre>";
   }
 
   has &!handler = -> $context {
@@ -51,11 +54,25 @@ class Cantilever {
     );
     my $content = "";
     if $path.is-home {
-      $content = &!home($!pages);
+      $content = &!home({
+        type => "home",
+        content => $!pages,
+        root => $!root
+      });
     } elsif $path.is-page && my $page = $!pages.get-page($path.page-tree) {
-      $content = &!page($page);
+      $content = &!page({
+        type => "page",
+        content => $!pages,
+        root => $!root,
+        page => $page
+      });
     } elsif $path.is-category && my $category = $!pages.get-category($path.page-tree) {
-      $content = &!category($category);
+      $content = &!category({
+        type => "category",
+        content => $!pages,
+        root => $!root,
+        category => $category
+      });
     } else {
       die Cantilever::Exception.new(
         code => 404,
@@ -69,9 +86,16 @@ class Cantilever {
 
     CATCH {
       default {
-        $context.set-status(.code || 500);
+        my $err = $_;
+        $err.say;
+        $context.set-status($err.code || 500);
         $context.content-type('text/html');
-        $context.send(&!error($_));
+        $context.send(&!error({
+          type => "error",
+          content => $!pages,
+          root => $!root,
+          error => $err
+        }));
       }
     }
   };

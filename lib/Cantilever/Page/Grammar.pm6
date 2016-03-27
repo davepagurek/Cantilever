@@ -31,7 +31,7 @@ grammar Cantilever::Page::Grammar {
   token tag:sym<self-closing-tag> { '<' <attr-name> <attributes> \s* '/' '>' }
   token tag:sym<wrapping-tag> {
     [ '<' $<tag-name>=(<attr-name>) <?{~$<tag-name>.lc ne "code"}> <attributes> '>' ] ~ [ '<' '/' $<tag-name> '>' ]
-    <node>*
+    [ \n* <node> \n* ]*
   }
   token tag:sym<code-tag> {
     [ '<' 'code' <attributes> '>' ]
