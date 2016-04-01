@@ -11,7 +11,7 @@ class Cantilever::Category {
   has Cantilever::Page %.pages = {};
   has Cantilever::Category %.sub-cats = {};
   has @.category-tree;
-  has %.meta = {};
+  has %.meta;
   has Bool $.dev;
 
   has @!custom-tags;
@@ -37,6 +37,8 @@ class Cantilever::Category {
         from-json("$path/category.json".IO.slurp),
         -> $v { $v.subst(/'%root%'/, $!root); }
       );
+    } else {
+      %!meta = name => $!slug;
     }
 
     for $!path.dir -> $element {
@@ -64,7 +66,7 @@ class Cantilever::Category {
   }
 
   method link returns Str {
-    $!root ~ @.category-tree.join("/") ~ "/$.slug";
+    $!root ~ @.category-tree[1..*-1].join("/") ~ "/$.slug";
   }
 
   method get-page(@page-tree) returns Cantilever::Page {
@@ -83,6 +85,18 @@ class Cantilever::Category {
     } else {
       %.sub-cats{@page-tree[0]}.?get-category(@page-tree[1 .. *-1]);
     }
+  }
+
+  method all-pages returns Iterable {
+    %.pages.kv.map(-> $k, $v { $v }).sort(-> $v { $v.meta<date> }).reverse;
+  }
+
+  method pages-by-date returns Iterable {
+    self.all-pages.classify(-> $p { $p.meta<date>.year }).pairs.sort(*.key).reverse;
+  }
+
+  method all-cats returns Iterable {
+    %.sub-cats.kv.map(-> $k, $v { $v });
   }
 
   method to-hash returns Hash {

@@ -18,7 +18,7 @@ class Cantilever::Page {
   has Str $!root = ".";
   has @!custom-tags;
 
-  submethod BUILD(:@category-tree = [], Str :$slug, Str :$content, Str :$root, :@custom-tags = [], :$dev = False) {
+  submethod BUILD(:@category-tree = [], Str :$slug, Str :$content, Str :$root, :@custom-tags = [], :@meta-maps = [], :$dev = False) {
     $!root = $root if $root;
     $!slug = $slug if $slug;
     @!custom-tags = @custom-tags;
@@ -44,11 +44,24 @@ class Cantilever::Page {
       }
     }
     $!ast = $match.made;
-    %!meta = deep-map($!ast.meta, -> $v { $v.subst(/'%root%'/, $!root); });
+    %!meta = Hash.new(
+      deep-map($!ast.meta, -> $v { $v.subst(/'%root%'/, $!root) })
+      .kv
+      .map(-> $k, $v {
+        given $k {
+          when 'date' {
+            $k => Date.new($v);
+          }
+          default {
+            $k => $v;
+          }
+        }
+      })
+    );
   }
 
   method cat-slug returns Str {
-    @.category-tree.tail
+    @!category-tree[*-1];
   }
 
   method rendered returns Str {
@@ -63,6 +76,6 @@ class Cantilever::Page {
   }
 
   method link returns Str {
-    $!root ~ @.category-tree.join("/") ~ "/$.slug";
+    $!root  ~ '/' ~ @.category-tree[1..*-1].join("/") ~ "/$.slug";
   }
 }

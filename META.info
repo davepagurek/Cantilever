@@ -8,9 +8,9 @@
     },
     "depends": [
         "Web",
-        "HTTP::Easy",
+        "HTTP::Easy::PSGI",
         "JSON::Tiny",
         "HTML::Entity"
     ],
-    "source-url": "git@github.com:pahgawk/Cantilever.git"
+    "source-url": "git@github.com:davepagurek/Cantilever.git"
 }

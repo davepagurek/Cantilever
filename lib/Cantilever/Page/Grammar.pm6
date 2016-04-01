@@ -6,7 +6,7 @@ grammar Cantilever::Page::Grammar {
     <content> \s*
     $
   }
-  token meta { '<!--' ~ '-->' [ \s* <object> \s* ] }
+  token meta { \s* '<!--' ~ '-->' [ \s* <object> \s* ] }
   token content { <line>* % \n+ }
 
   proto token line {*}
@@ -42,7 +42,8 @@ grammar Cantilever::Page::Grammar {
   proto token attribute {*}
   token attribute:sym<quoted-attribute> { <attr-name> '=' <string> }
   token attribute:sym<unquoted-attribute> { $<attr>=<attr-name> '=' $<val>=<attr-name> }
-  token attr-name { \w+ }
+  token attribute:sym<flag-attribute> { $<attr>=<attr-name> }
+  token attr-name { <[\w \-]>+ }
 
 
   # JSON rules

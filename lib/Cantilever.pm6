@@ -13,9 +13,12 @@ class Cantilever {
   has Str $.root = ".";
   has Int $.cache-life = 604800; # One week
   has Int $.port = 3000;
+  has Str $.ip = "12.0.0.1";
   has Str $.content-dir = "content";
   has @.ignore = [];
+  has @.ignore-cats = [];
   has @.custom-tags = [];
+  has Str $.mimefile = "/etc/mime.types";
 
   has Web::App $!app;
   has HTTP::Easy::PSGI $!http;
@@ -23,7 +26,7 @@ class Cantilever {
     path => $!content-dir.IO,
     root => $!root,
     custom-tags => @!custom-tags,
-    ignore => @!ignore,
+    ignore => [|@!ignore, |@!ignore-cats],
     dev => $!dev
   );
 
@@ -53,12 +56,18 @@ class Cantilever {
       content-dir => $!content-dir
     );
     my $content = "";
-    if $path.is-home {
+    if $path.is-file && $path ~~ none(|@!ignore) {
+      $context.load-mime($!mimefile);
+      $context.send-file($path.page-tree[*-1], file => $path.raw-file);
+    } elsif $path.is-home {
       $content = &!home({
         type => "home",
         content => $!pages,
         root => $!root
       });
+      $context.set-status(200);
+      $context.content-type('text/html');
+      $context.send($content);
     } elsif $path.is-page && my $page = $!pages.get-page($path.page-tree) {
       $content = &!page({
         type => "page",
@@ -66,6 +75,9 @@ class Cantilever {
         root => $!root,
         page => $page
       });
+      $context.set-status(200);
+      $context.content-type('text/html');
+      $context.send($content);
     } elsif $path.is-category && my $category = $!pages.get-category($path.page-tree) {
       $content = &!category({
         type => "category",
@@ -73,22 +85,22 @@ class Cantilever {
         root => $!root,
         category => $category
       });
+      $context.set-status(200);
+      $context.content-type('text/html');
+      $context.send($content);
     } else {
       die Cantilever::Exception.new(
         code => 404,
         path => $path,
-        message => "Couldn't find page $!root/{$path.page-tree.join('/')}"
+        message => "Couldn't find page {$context.path}"
       );
     }
-    $context.set-status(200);
-    $context.content-type('text/html');
-    $context.send($content);
 
     CATCH {
       default {
         my $err = $_;
         $err.say;
-        $context.set-status($err.code || 500);
+        $context.set-status($err.?code || 500);
         $context.content-type('text/html');
         $context.send(&!error({
           type => "error",
@@ -101,7 +113,7 @@ class Cantilever {
   };
 
   method run {
-    $!http = HTTP::Easy::PSGI.new(debug => $.dev, port => $.port);
+    $!http = HTTP::Easy::PSGI.new(ip => $.ip, port => $.port);
     $!app = Web::App.new($!http);
     $!app.run: &!handler;
   }

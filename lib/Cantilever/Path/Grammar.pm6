@@ -4,5 +4,5 @@ grammar Cantilever::Path::Grammar {
   token TOP {
     ^^ [ '/' <name> ]*? '/'? $$
   }
-  token name { <[ \w \- ]>+ }
+  token name { <[ \w \- \. ]>+ }
 }

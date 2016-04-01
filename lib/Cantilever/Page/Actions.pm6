@@ -81,6 +81,9 @@ class Cantilever::Page::Actions {
   method attribute:sym<unquoted-attribute>($/) {
     $/.make: (~$<attr> => ~$<val>);
   }
+  method attribute:sym<flag-attribute>($/) {
+    $/.make: (~$<attr> => "true");
+  }
   method attr-name($/) {
     $/.make: (~$/).substr(1, *-1);
   }

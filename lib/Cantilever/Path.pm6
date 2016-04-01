@@ -9,7 +9,6 @@ class Cantilever::Path {
 
   has Bool $!valid = False;
   has @!page-tree = [];
-  has $!home;
   has $!page;
   has $!category;
 
@@ -20,8 +19,7 @@ class Cantilever::Path {
     my $match = Cantilever::Path::Grammar.parse($path, actions => $actions);
     if $match {
       @!page-tree = $match.made;
-    } else {
-      $!valid = False;
+      $!valid = True;
     }
   }
 
@@ -32,20 +30,28 @@ class Cantilever::Path {
     }
   }
 
+  method is-file {
+    $!valid && @!page-tree.elems > 0 && @!page-tree.[*-1] ~~ / ^^ <-[\.]>+ '.' / && self.raw-file.IO.e;
+  }
+
   method is-home {
-    @!page-tree.elems == 0;
+    $!valid && @!page-tree.elems == 0;
   }
 
   method is-page {
-    !self.is-home && self.source-file.IO.e;
+    $!valid && !self.is-home && self.source-file.IO.e;
   }
 
   method is-category {
-    !self.is-home && self.source-dir.IO.d;
+    $!valid && !self.is-home && self.source-dir.IO.d;
+  }
+
+  method raw-file {
+    @!page-tree.join('/');
   }
 
   method source-file {
-    $!home ?? "$.content-dir/index.html" !! "$.content-dir/{@!page-tree.join('/')}.html";
+    self.is-home ?? "$.content-dir/index.html" !! "$.content-dir/{@!page-tree.join('/')}.html";
   }
 
   method source-dir {
