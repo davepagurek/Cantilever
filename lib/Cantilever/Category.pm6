@@ -65,8 +65,16 @@ class Cantilever::Category {
     }
   }
 
-  method link returns Str {
-    $!root ~ @.category-tree[1..*-1].join("/") ~ "/$.slug";
+  method for-each(&callback) {
+    for self.all-pages -> $page { &callback($page); };
+    for self.all-cats -> $cat {
+      &callback($cat);
+      $cat.for-each(&callback);
+    };
+  }
+
+  method link($root = $!root) returns Str {
+    $root ~ @.category-tree[1..*-1].join("/") ~ "/$.slug";
   }
 
   method get-page(@page-tree) returns Cantilever::Page {

@@ -7,10 +7,12 @@ use Cantilever::Path;
 use Cantilever::Category;
 use Cantilever::Test::Context;
 use Cantilever::Exception;
+use Shell::Command;
 
 class Cantilever {
   has Bool $.dev = False;
   has Str $.root = ".";
+  has Str $.export-dir = "./export";
   has Int $.cache-life = 604800; # One week
   has Int $.port = 3000;
   has Str $.ip = "12.0.0.1";
@@ -58,7 +60,7 @@ class Cantilever {
     my $content = "";
     if $path.is-file && $path ~~ none(|@!ignore) {
       $context.load-mime($!mimefile);
-      $context.send-file($path.page-tree[*-1], file => $path.raw-file);
+      $context.send-file($path.page-tree[*-1], content => $path.raw-file.IO.slurp(:bin));
     } elsif $path.is-home {
       $content = &!home({
         type => "home",
@@ -111,6 +113,56 @@ class Cantilever {
       }
     }
   };
+
+  method generate(Hash :$copy = Hash.new) {
+    $!pages.for-each(-> $p {
+      say "Making {$p.link($!export-dir)} at {DateTime.now.posix}";
+      mkpath($p.link($!export-dir));
+      my $fh = "{$p.link($!export-dir)}/index.html".IO.open(:w);
+      $fh.print("<!-- {DateTime.now.posix} -->\n");
+      if $p ~~ Cantilever::Page {
+        $fh.print(&!page({
+          type => "page",
+          content => $!pages,
+          root => $!root,
+          page => $p
+        }));
+      } elsif $p ~~ Cantilever::Category {
+        $fh.print(&!category({
+          type => "category",
+          content => $!pages,
+          root => $!root,
+          category => $p
+        }));
+      }
+    });
+
+    say "Making homepage";
+    mkpath($!export-dir);
+    my $home = "{$!export-dir}/index.html".IO.open(:w);
+    $home.print(&!home({
+      type => "home",
+      content => $!pages,
+      root => $!root
+    }));
+
+    say "Making 404 page";
+    my $err404 = "{$!export-dir}/404.html".IO.open(:w);
+    $err404.print(&!error({
+      type => "error",
+      content => $!pages,
+      root => $!root,
+      error => Cantilever::Exception.new(
+        code => 404,
+        message => "Sorry, we couldn't find the page you were looking for."
+      )
+    }));
+
+    for $copy.kv -> $k, $v {
+      say "Copying $k to {$!export-dir}/{$v}";
+      cp($k, "{$!export-dir}/{$v}", :r);
+    }
+  }
 
   method run {
     $!http = HTTP::Easy::PSGI.new(ip => $.ip, port => $.port);

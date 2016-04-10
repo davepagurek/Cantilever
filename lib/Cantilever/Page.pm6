@@ -75,7 +75,7 @@ class Cantilever::Page {
     $!rendered;
   }
 
-  method link returns Str {
-    $!root  ~ '/' ~ @.category-tree[1..*-1].join("/") ~ "/$.slug";
+  method link(Str $root = $!root) returns Str {
+    $root  ~ '/' ~ @.category-tree[1..*-1].join("/") ~ "/$.slug";
   }
 }
