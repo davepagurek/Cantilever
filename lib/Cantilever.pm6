@@ -33,6 +33,7 @@ class Cantilever {
   );
 
   has &.home is rw = -> %params { "<h1>Home</h1>"; }
+  has &.archives is rw = -> %params { "<h1>Archives</h1>"; }
   has &.page is rw = -> %params { "<h1>{%params<page>.meta<title> || 'Untitled'}</h1> \n {%params<page>.rendered}"; }
   has &.category is rw = -> %params {
     "<h1>Category {%params<category>.meta<name> || 'Untitled'}</h1> \n" ~
@@ -90,6 +91,15 @@ class Cantilever {
       $context.set-status(200);
       $context.content-type('text/html');
       $context.send($content);
+    } elsif $path.page-tree.elems == 1 && $path.page-tree[0] eq "archives" {
+      $content = &!archives({
+        type => "archives",
+        content => $!pages,
+        root => $!root
+      });
+      $context.set-status(200);
+      $context.content-type('text/html');
+      $context.send($content);
     } else {
       die Cantilever::Exception.new(
         code => 404,
@@ -142,6 +152,15 @@ class Cantilever {
     my $home = "{$!export-dir}/index.html".IO.open(:w);
     $home.print(&!home({
       type => "home",
+      content => $!pages,
+      root => $!root
+    }));
+
+    say "Making archives";
+    mkpath($!export-dir ~ "/archives");
+    my $archives = "{$!export-dir}/archives/index.html".IO.open(:w);
+    $archives.print(&!archives({
+      type => "archives",
       content => $!pages,
       root => $!root
     }));

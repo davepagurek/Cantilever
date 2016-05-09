@@ -44,6 +44,7 @@ module Cantilever::Page::Types {
   class Cantilever::Page::Tag does Cantilever::Page::SourceNode is export {
     has Str $.type is required;
     has %.attributes = {};
+    has %.formatted-attributes = {};
     has @.children = [];
     method !attributes-to-html(%options) {
       if %.attributes.elems > 0 { 
@@ -55,10 +56,13 @@ module Cantilever::Page::Types {
       }
     }
     method to-html(%options) {
+      %.formatted-attributes = Hash.new(%.attributes.kv.map(-> $k, $v {
+        $k => $v.subst(/'%root%'/, %options<root>);
+      }));
       my $customTag = %options<custom-tags>.first(-> $x {$x.matches(self)});
       if $customTag {
         $customTag.render(self, %options);
-      } elsif @.children.elems == 0 {
+      } elsif @.children.elems == 0 && $.type ne any("script") {
         "<{$.type}{self!attributes-to-html(%options)} />";
       } else {
         "<{$.type}{self!attributes-to-html(%options)}>" ~
@@ -74,7 +78,7 @@ module Cantilever::Page::Types {
       my $tag = @.children.first(-> $el {
         $el.isa(Cantilever::Page::Tag) &&
         (
-          $el.type.lc ~~ any(/^^h\d+$$/, "p", "ul", "ol", "li", "div", "pre")
+          $el.type.lc ~~ any(/^^h\d+$$/, "p", "ul", "ol", "li", "div", "pre", "script")
           ||
           %options<custom-tags>.first(*.matches($el)).?block
         )
