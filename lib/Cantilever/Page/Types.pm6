@@ -24,7 +24,11 @@ module Cantilever::Page::Types {
 
   class Cantilever::Page::Text does Cantilever::Page::SourceNode is export {
     has Str $.txt is required;
-    method to-html(%options) { $.txt.subst(/'%root%'/, %options<root>); }
+    method to-html(%options) {
+      my $replaced = $.txt.subst(/'%root%'/, %options<root>);
+      $replaced ~~ s/[['http' 's'? '://']? 'www.']? 'youtube.com/watch?v=' (\w+) '/'?/<iframe class="youtube embed" width="560" height="315" src="http:\/\/www.youtube.com\/embed\/$0?rel=0" frameborder="0" allowfullscreen><\/iframe>/;
+      return $replaced;
+    }
   }
 
   class Cantilever::Page::SourceCode does Cantilever::Page::SourceNode is export {
