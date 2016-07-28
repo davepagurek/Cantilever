@@ -66,7 +66,7 @@ module Cantilever::Page::Types {
       my $customTag = %options<custom-tags>.first(-> $x {$x.matches(self)});
       if $customTag {
         $customTag.render(self, %options);
-      } elsif @.children.elems == 0 && $.type ne any("script") {
+      } elsif @.children.elems == 0 && $.type ne any("script", "iframe") {
         "<{$.type}{self!attributes-to-html(%options)} />";
       } else {
         "<{$.type}{self!attributes-to-html(%options)}>" ~
