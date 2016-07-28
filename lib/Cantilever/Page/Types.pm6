@@ -18,7 +18,7 @@ module Cantilever::Page::Types {
     has @.content = [];
     has %.meta = {}; 
     method to-html(%options) {
-      @.content.map(*.to-html(%options)).join("\n");
+      @.content.map(*.to-html(%options)).join("");
     }
   }
 
@@ -54,7 +54,7 @@ module Cantilever::Page::Types {
       if %.attributes.elems > 0 { 
         " " ~ %.attributes.kv.map(-> $k, $v {
           "$k='{$v.subst(/'%root%'/, %options<root>)}'"
-        }).join(" ");
+        }).join("");
       } else {
         ""
       }
@@ -70,7 +70,7 @@ module Cantilever::Page::Types {
         "<{$.type}{self!attributes-to-html(%options)} />";
       } else {
         "<{$.type}{self!attributes-to-html(%options)}>" ~
-        @.children.map(*.to-html(%options)) ~
+        @.children.map(*.to-html(%options)).join("") ~
         "</$.type>";
       }
     }

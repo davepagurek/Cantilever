@@ -74,7 +74,7 @@ class Cantilever::Page::Actions {
   }
   method node:sym<text-node>($/) {
     $/.make: Cantilever::Page::Text.new(txt => ~$/.subst(
-      /<[ \n \` \\ \< \> \* ]>/,
+      /\\<[ \n \` \\ \< \> \* ]>/,
       -> $escaped { encode-entities($escaped.substr(1)) },
       :g
     ));
