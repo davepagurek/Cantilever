@@ -10,19 +10,27 @@ grammar Cantilever::Page::Grammar {
   token content { <line>* % \n+ }
 
   proto token line {*}
+  token line:sym<heading> { $<level>=["#"+] $<text>=<node>+ }
+  token line:sym<ul> { <li>+ % \n }
   token line:sym<nodes> { <node>+ }
   token line:sym<code> {
     ['```'[' '*$<str>=\w+]?\n] ~ ['```']
     $<src>=[<-[\`]> | "\\\`"]*
   }
 
+  token li {
+    '-' \s* $<text>=<node>+
+  }
+
   proto token node {*}
   token node:sym<xml> { <tag> }
   token node:sym<inline-code> {'`'~'`'[$<text>=[<-[\n \`]> | "\\'"]+]}
+  token node:sym<bold> {'**'~'**'[$<text>=[<-[\n \*]> | "\\*"]+]}
+  token node:sym<italic> {'*'~'*'[$<text>=[<-[\n \*]> | "\\*"]+]}
   token node:sym<text-node> {
     [
-      <-[ \n \` \\ \< \>]> # All characters that aren't newlines or specials
-      | [ \\ <[ \` \\ \< \> ]> ] # Escaped specials
+      <-[ \n \` \\ \< \> \*]> # All characters that aren't newlines or specials
+      | [ \\ <[ \` \\ \< \> \*]> ] # Escaped specials
     ]+
   }
   token node:sym<comment> { '<!--' .*? '-->' }

@@ -16,6 +16,18 @@ class Cantilever::Page::Actions {
   }
 
   # line
+  method line:sym<heading>($/) {
+    $/.make: Cantilever::Page::Tag.new(
+      type => "h{~$<level>.chars}",
+      children => $<text>.map(*.made)
+    );
+  }
+  method line:sym<ul>($/) {
+    $/.make: Cantilever::Page::Tag.new(
+      type => "ul",
+      children => $<li>.map(*.made)
+    );
+  }
   method line:sym<nodes>($/) {
     $/.make: Cantilever::Page::Line.new(children => $<node>.map(*.made));
   }
@@ -26,6 +38,13 @@ class Cantilever::Page::Actions {
       children => [ Cantilever::Page::SourceCode.new(src => ~$<src>.subst("\\\`", "`", :g)) ]
     );
   }  
+
+  method li($/) {
+    $/.make: Cantilever::Page::Tag.new(
+      type => "li",
+      children => $<text>.map(*.made)
+    );
+  }
 
   # node
   method node:sym<xml>($/) {
@@ -41,9 +60,21 @@ class Cantilever::Page::Actions {
       children => [ Cantilever::Page::SourceCode.new(src => ~$<text>) ]
     );
   }
+  method node:sym<bold>($/) {
+    $/.make: Cantilever::Page::Tag.new(
+      type => "strong",
+      children => [ Cantilever::Page::Text.new(txt => ~$<text>) ]
+    );
+  }
+  method node:sym<italic>($/) {
+    $/.make: Cantilever::Page::Tag.new(
+      type => "em",
+      children => [ Cantilever::Page::Text.new(txt => ~$<text>) ]
+    );
+  }
   method node:sym<text-node>($/) {
     $/.make: Cantilever::Page::Text.new(txt => ~$/.subst(
-      /<[ \n \` \\ \< \> ]>/,
+      /<[ \n \` \\ \< \> \* ]>/,
       -> $escaped { encode-entities($escaped.substr(1)) },
       :g
     ));

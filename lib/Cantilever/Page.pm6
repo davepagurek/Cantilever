@@ -33,7 +33,7 @@ class Cantilever::Page {
         die Cantilever::Exception.new(
           code => 500,
           page => "{@!category-tree.join('/')}/$slug",
-          message => "Couldn't parse source content. Farthest parse:\n$attempt\n\nOriginal:$content"
+          message => "Couldn't parse source content. Farthest parse:\n{$attempt.gist}\n\nOriginal:$content"
         );
       } else {
         die Cantilever::Exception.new(
