@@ -47,8 +47,18 @@ subtest {
       "Keeps formatting tags"
     ],
     [
+      "This is *italic*, this is **bold**",
+      "<p>This is <em>italic</em>, this is <strong>bold</strong></p>",
+      "Converts Markdown bold and italic"
+    ],
+    [
+      "List:\n- thing 1\n- thing *2*",
+      "<p>List:</p><ul><li>thing 1</li><li>thing <em>2</em></li></ul>",
+      "Converts Markdown lists"
+    ],
+    [
       "List:\n<ol>\n<li>Test</li>\n</ol>",
-      "<p>List:</p>\n<ol><li>Test</li></ol>",
+      "<p>List:</p><ol><li>Test</li></ol>",
       "Keeps lists"
     ],
     [
