@@ -111,7 +111,6 @@ class Cantilever {
     CATCH {
       default {
         my $err = $_;
-        $err.say;
         $context.set-status($err.?code || 500);
         $context.content-type('text/html');
         $context.send(&!error({

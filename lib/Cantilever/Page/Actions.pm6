@@ -116,7 +116,7 @@ class Cantilever::Page::Actions {
     $/.make: (~$<attr> => "true");
   }
   method attr-name($/) {
-    $/.make: (~$/).substr(1, *-1);
+    $/.make: (~$/);
   }
 
   
