@@ -128,7 +128,6 @@ class Cantilever {
       say "Making {$p.link($!export-dir)} at {DateTime.now.posix}";
       mkpath($p.link($!export-dir));
       my $fh = "{$p.link($!export-dir)}/index.html".IO.open(:w);
-      $fh.print("<!-- {DateTime.now.posix} -->\n");
       if $p ~~ Cantilever::Page {
         $fh.print(&!page({
           type => "page",
