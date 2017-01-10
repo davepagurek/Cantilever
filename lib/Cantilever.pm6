@@ -127,16 +127,16 @@ class Cantilever {
     $!pages.for-each(-> $p {
       say "Making {$p.link($!export-dir)} at {DateTime.now.posix}";
       mkpath($p.link($!export-dir));
-      my $fh = "{$p.link($!export-dir)}/index.html".IO.open(:w);
+      my $path = "{$p.link($!export-dir)}/index.html".IO;
       if $p ~~ Cantilever::Page {
-        $fh.print(&!page({
+        spurt($path, &!page({
           type => "page",
           content => $!pages,
           root => $!root,
           page => $p
         }));
       } elsif $p ~~ Cantilever::Category {
-        $fh.print(&!category({
+        spurt($path, &!category({
           type => "category",
           content => $!pages,
           root => $!root,
@@ -147,8 +147,8 @@ class Cantilever {
 
     say "Making homepage";
     mkpath($!export-dir);
-    my $home = "{$!export-dir}/index.html".IO.open(:w);
-    $home.print(&!home({
+    my $home = "{$!export-dir}/index.html".IO;
+    spurt($home, &!home({
       type => "home",
       content => $!pages,
       root => $!root
@@ -156,16 +156,16 @@ class Cantilever {
 
     say "Making archives";
     mkpath($!export-dir ~ "/archives");
-    my $archives = "{$!export-dir}/archives/index.html".IO.open(:w);
-    $archives.print(&!archives({
+    my $archives = "{$!export-dir}/archives/index.html".IO;
+    spurt($archives, &!archives({
       type => "archives",
       content => $!pages,
       root => $!root
     }));
 
     say "Making 404 page";
-    my $err404 = "{$!export-dir}/404.html".IO.open(:w);
-    $err404.print(&!error({
+    my $err404 = "{$!export-dir}/404.html".IO;
+    spurt($err404, &!error({
       type => "error",
       content => $!pages,
       root => $!root,
