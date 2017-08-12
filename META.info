@@ -10,7 +10,10 @@
         "Web",
         "HTTP::Easy::PSGI",
         "JSON::Tiny",
-        "HTML::Entity"
+        "HTML::Entity",
+        "Shell::Command",
+        "Template::Mojo",
+        "DateTime::Format"
     ],
     "source-url": "git@github.com:davepagurek/Cantilever.git"
 }
