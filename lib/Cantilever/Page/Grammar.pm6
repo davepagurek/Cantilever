@@ -15,7 +15,7 @@ grammar Cantilever::Page::Grammar {
   token line:sym<nodes> { <node>+ }
   token line:sym<code> {
     ['```'[' '*$<str>=\w+]?\n] ~ ['```']
-    $<src>=[<-[\`]> | "\\\`"]*
+    $<src>=[<!before '```'> .]*
   }
 
   token li {
