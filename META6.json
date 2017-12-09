@@ -1,0 +1,31 @@
+{
+  "name": "Cantilever",
+  "version": "0.1.0",
+  "description": "A flat file CMS for Perl 6",
+  "author": "Dave Pagurek",
+  "provides": {
+    "Cantilever": "lib/Cantilever.pm",
+    "Cantilever::Page": "lib/Cantilever/Page.pm",
+    "Cantilever::Page::Grammar": "lib/Cantilever/Page/Grammar.pm",
+    "Cantilever::Page::Actions": "lib/Cantilever/Page/Actions.pm",
+    "Cantilever::Page::Types": "lib/Cantilever/Page/Types.pm",
+    "Cantilever::Path": "lib/Cantilever/Path.pm",
+    "Cantilever::Path::Grammar": "lib/Cantilever/Path/Grammar.pm",
+    "Cantilever::Path::Actions": "lib/Cantilever/Path/Actions.pm",
+    "Cantilever::Category": "lib/Cantilever/Category.pm",
+    "Cantilever::Exception": "lib/Cantilever/Exception.pm",
+    "Cantilever::Helpers": "lib/Cantilever/Helpers.pm",
+    "Cantilever::Test::Context": "lib/Cantilever/Test/Context.pm",
+    "Cantilever::Test::Helpers": "lib/Cantilever/Test/Helpers.pm"
+  },
+  "depends": [
+    "Web",
+    "HTTP::Easy::PSGI",
+    "JSON::Tiny",
+    "HTML::Entity",
+    "Shell::Command",
+    "Template::Mojo",
+    "DateTime::Format"
+  ],
+  "source-url": "git@github.com:davepagurek/Cantilever.git"
+}
