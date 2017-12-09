@@ -1,4 +1,4 @@
-# Cantilever [![Build Status](https://travis-ci.org/davepagurek/Cantilever.svg?branch=master)](https://travis-ci.org/pahgawk/Cantilever)
+# Cantilever [![Build Status](https://travis-ci.org/davepagurek/Cantilever.svg?branch=master)](https://travis-ci.org/davepagurek/Cantilever)
 A flat file CMS for Perl 6
 
 ## Usage
