@@ -19,6 +19,7 @@
     "Cantilever::Test::Helpers": "lib/Cantilever/Test/Helpers.pm"
   },
   "depends": [
+    "File::Find",
     "Web",
     "HTTP::Easy::PSGI",
     "JSON::Tiny",
