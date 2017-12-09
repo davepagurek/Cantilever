@@ -82,7 +82,7 @@ module Cantilever::Page::Types {
       my $tag = @.children.first(-> $el {
         $el.isa(Cantilever::Page::Tag) &&
         (
-          $el.type.lc ~~ any(/^^h\d+$$/, "p", "ul", "ol", "li", "div", "pre", "script")
+          $el.type.lc ~~ any(/^^h\d+$$/, "p", "ul", "ol", "li", "div", "pre", "script", "hr")
           ||
           %options<custom-tags>.first(*.matches($el)).?block
         )
