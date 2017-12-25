@@ -26,7 +26,7 @@ module Cantilever::Page::Types {
     has Str $.txt is required;
     method to-html(%options) {
       my $replaced = $.txt.subst(/'%root%'/, %options<root>);
-      $replaced ~~ s/[['http' 's'? '://']? 'www.']? 'youtube.com/watch?v=' (<[\w\-]>+) '/'?/<iframe class="youtube embed" width="560" height="315" src="http:\/\/www.youtube.com\/embed\/$0?rel=0" frameborder="0" allowfullscreen><\/iframe>/;
+      $replaced ~~ s/[['http' 's'? '://']? 'www.']? 'youtube.com/watch?v=' (<[\w\-]>+) '/'?/<iframe class="youtube embed" width="560" height="315" src="\/\/www.youtube.com\/embed\/$0?rel=0" frameborder="0" allowfullscreen><\/iframe>/;
       return $replaced;
     }
   }
