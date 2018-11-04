@@ -59,7 +59,8 @@ class Cantilever::Category {
           slug => $slug,
           custom-tags => @!custom-tags,
           category-tree => [ |@!category-tree, $!slug ],
-          dev => $!dev
+          dev => $!dev,
+          source-modified-at => $element.modified.DateTime.posix
         );
       }
     }

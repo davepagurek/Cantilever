@@ -123,19 +123,24 @@ class Cantilever {
     }
   };
 
-  method generate(Hash :$copy = Hash.new) {
+  method generate(Hash :$copy = Hash.new, Int :$regenerate-after = DateTime.now.posix) {
     $!pages.for-each(-> $p {
-      say "Making {$p.link($!export-dir)} at {DateTime.now.posix}";
       mkpath($p.link($!export-dir));
       my $path = "{$p.link($!export-dir)}/index.html".IO;
       if $p ~~ Cantilever::Page {
-        spurt($path, &!page({
-          type => "page",
-          content => $!pages,
-          root => $!root,
-          page => $p
-        }));
+        if $p.needs-rewrite($path, $regenerate-after) {
+          say "Making {$p.link($!export-dir)}";
+          spurt($path, &!page({
+            type => "page",
+            content => $!pages,
+            root => $!root,
+            page => $p
+          }));
+        } else {
+          say "Using existing {$p.link($!export-dir)}";
+        }
       } elsif $p ~~ Cantilever::Category {
+        say "Making {$p.link($!export-dir)}";
         spurt($path, &!category({
           type => "category",
           content => $!pages,

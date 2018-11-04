@@ -17,13 +17,15 @@ class Cantilever::Page {
   has Str $!rendered;
   has Str $!root = ".";
   has @!custom-tags;
+  has Int $!source-modified-at;
 
-  submethod BUILD(:@category-tree = [], Str :$slug, Str :$content, Str :$root, :@custom-tags = [], :@meta-maps = [], :$dev = False) {
+  submethod BUILD(:@category-tree = [], Str :$slug, Str :$content, Str :$root, :@custom-tags = [], :@meta-maps = [], :$dev = False, Int :$source-modified-at = DateTime.now.posix) {
     $!root = $root if $root;
     $!slug = $slug if $slug;
     @!custom-tags = @custom-tags;
     @!category-tree = @category-tree;
     $!dev = $dev;
+    $!source-modified-at = $source-modified-at;
 
     my $actions = Cantilever::Page::Actions.new;
     my $match = Cantilever::Page::Grammar.parse($content || "", actions => $actions);
@@ -77,5 +79,32 @@ class Cantilever::Page {
 
   method link(Str $root = $!root) returns Str {
     $root  ~ '/' ~ @.category-tree[1..*-1].join("/") ~ "/$.slug";
+  }
+
+  method date-tag returns Str {
+    return "<!-- CANTILEVER-MODIFIED-AT {DateTime.now.posix.Str} -->";
+  }
+
+  method needs-rewrite(IO $file, Int $regenerate-after) returns Bool {
+    if (!$file.e) {
+      # File does not exist, we need to make it
+      return True;
+    }
+
+    for $file.lines -> $line {
+      if $line ~~ / '<!-- CANTILEVER-MODIFIED-AT ' $<timestamp>=[ \d+ ] ' -->' / {
+        my $last-modified-at = $<timestamp>.Int;
+
+        if $regenerate-after > 0 && $last-modified-at < $regenerate-after {
+          return True;
+        }
+
+        # Return whether or not the source file has been updated since last time
+        return $last-modified-at < $!source-modified-at;
+      }
+    }
+
+    # Otherwise, assume it needs to be regenerated
+    return True;
   }
 }
