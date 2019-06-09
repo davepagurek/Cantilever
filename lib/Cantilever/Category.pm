@@ -107,16 +107,16 @@ class Cantilever::Category {
     }
   }
 
-  method all-pages returns Iterable {
-    %.pages.kv.map(-> $k, $v { $v }).sort(-> $v { $v.meta<date> }).reverse;
+  method all-pages returns Array {
+    Array.new: %.pages.kv.map(-> $k, $v { $v }).sort(-> $v { $v.meta<date> }).reverse;
   }
 
-  method pages-by-date returns Iterable {
-    self.all-pages.classify(-> $p { $p.meta<date>.year }).pairs.sort(*.key).reverse;
+  method pages-by-date returns Array {
+    Array.new: self.all-pages.classify(-> $p { $p.meta<date>.year }).pairs.sort(*.key).reverse;
   }
 
-  method all-cats returns Iterable {
-    %.sub-cats.kv.map(-> $k, $v { $v });
+  method all-cats returns Array {
+    Array.new: %.sub-cats.kv.map(-> $k, $v { $v });
   }
 
   method to-hash returns Hash {
