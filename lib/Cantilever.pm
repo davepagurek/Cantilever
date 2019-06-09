@@ -1,7 +1,7 @@
 use v6;
 
-use Web::App;
-use HTTP::Easy::PSGI;
+#use Web::App;
+#use HTTP::Easy::PSGI;
 
 use Cantilever::Path;
 use Cantilever::Category;
@@ -22,8 +22,8 @@ class Cantilever {
   has @.custom-tags = [];
   has Str $.mimefile = "/etc/mime.types";
 
-  has Web::App $!app;
-  has HTTP::Easy::PSGI $!http;
+  #has Web::App $!app;
+  #has HTTP::Easy::PSGI $!http;
   has Cantilever::Category $!pages = Cantilever::Category.new(
     path => $!content-dir.IO,
     root => $!root,
@@ -123,9 +123,10 @@ class Cantilever {
     }
   };
 
-  method generate(Hash :$copy = Hash.new, Int :$regenerate-after = DateTime.now.posix) {
+  method generate(Hash :$copy = Hash.new, Hash :$custom = Hash.new, Int :$regenerate-after = DateTime.now.posix) {
+    my $lock = Lock.new;
     $!pages.for-each(-> $p {
-      mkpath($p.link($!export-dir));
+      $lock.protect({ mkpath($p.link($!export-dir)) });
       my $path = "{$p.link($!export-dir)}/index.html".IO;
       if $p ~~ Cantilever::Page {
         if $p.needs-rewrite($path, $regenerate-after) {
@@ -180,17 +181,30 @@ class Cantilever {
       )
     }));
 
+    say "Making custom pages";
+    for $custom.kv -> $k, &v {
+      say "Making page $k";
+      my $custom-path = "{$!export-dir}/$k";
+      mkpath($custom-path);
+      my $custom-path-file = "{$!export-dir}/$k/index.html";
+      spurt($custom-path-file, &v({
+        type => "custom",
+        content => $!pages,
+        root => $!root
+      }));
+    }
+
     for $copy.kv -> $k, $v {
       say "Copying $k to {$!export-dir}/{$v}";
       cp($k, "{$!export-dir}/{$v}", :r);
     }
   }
 
-  method run {
-    $!http = HTTP::Easy::PSGI.new(ip => $.ip, port => $.port);
-    $!app = Web::App.new($!http);
-    $!app.run: &!handler;
-  }
+  #method run {
+    #$!http = HTTP::Easy::PSGI.new(ip => $.ip, port => $.port);
+    #$!app = Web::App.new($!http);
+    #$!app.run: &!handler;
+  #}
 
   method get($url) {
     my $context = Cantilever::Test::Context.new(path => $url);

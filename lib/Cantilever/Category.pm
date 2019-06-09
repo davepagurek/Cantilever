@@ -41,37 +41,48 @@ class Cantilever::Category {
       %!meta = name => $!slug;
     }
 
-    for $!path.dir -> $element {
-      next if ~$element ~~ any(|@ignore);
-      if $element.d {
-        %!sub-cats{$element.basename} = Cantilever::Category.new(
-          path => $element,
-          root => $!root,
-          custom-tags => @!custom-tags,
-          category-tree => [ |@!category-tree, $!slug ],
-          dev => $!dev
-        );
-      } elsif $element.e &&  $element.extension ~~ /^ 'htm' 'l'? $/ {
-        my $slug = $element.basename.substr(0, *-$element.extension.chars-1);
-        %!pages{$slug} = Cantilever::Page.new(
-          content => $element.slurp,
-          root => $!root,
-          slug => $slug,
-          custom-tags => @!custom-tags,
-          category-tree => [ |@!category-tree, $!slug ],
-          dev => $!dev,
-          source-modified-at => $element.modified.DateTime.posix
-        );
-      }
-    }
+    my $cat-lock = Lock.new;
+    my $page-lock = Lock.new;
+    await Promise.allof($!path.dir.map(-> $element {
+      Promise.start({
+        if ~$element ~~ any(|@ignore) {
+          # Nothing
+        } elsif $element.d {
+          my $cat = Cantilever::Category.new(
+            path => $element,
+            root => $!root,
+            custom-tags => @!custom-tags,
+            category-tree => [ |@!category-tree, $!slug ],
+            dev => $!dev
+          );
+          $cat-lock.protect({ %!sub-cats{$element.basename} = $cat; });
+        } elsif $element.e &&  $element.extension ~~ /^ 'htm' 'l'? $/ {
+          my $slug = $element.basename.substr(0, *-$element.extension.chars-1);
+          my $page = Cantilever::Page.new(
+            content => $element.slurp,
+            root => $!root,
+            slug => $slug,
+            custom-tags => @!custom-tags,
+            category-tree => [ |@!category-tree, $!slug ],
+            dev => $!dev,
+            source-modified-at => $element.modified.DateTime.posix
+          );
+          $page-lock.protect({ %!pages{$slug} = $page; });
+        }
+      });
+    }));
   }
 
   method for-each(&callback) {
-    for self.all-pages -> $page { &callback($page); };
-    for self.all-cats -> $cat {
-      &callback($cat);
-      $cat.for-each(&callback);
-    };
+    await Promise.allof(
+      self.all-pages.map(-> $page { Promise.start({ &callback($page); }) }),
+      self.all-cats.map(-> $cat {
+        Promise.start({
+          &callback($cat);
+          $cat.for-each(&callback);
+        });
+      })
+    );
   }
 
   method link($root = $!root) returns Str {
